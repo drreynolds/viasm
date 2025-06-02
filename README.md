@@ -2,18 +2,48 @@
 
 Hands-on codes for [VIASM 2025 summer school on advanced numerical methods for deterministic and stochastic differential equations](https://viasm.edu.vn/en/hdkh/summer-school-on-anm2025).
 
-These codes require a modern Python installation.
+## Dependencies
 
-Codes are grouped according to type:
+These codes require a modern Python installation.  All dependencies are included in the file `python_requirements.txt`.
 
-* `initial_demo` -- simple demonstration scripts showing the use of Python for mathematical calculations and plotting.
-* `shared` -- reusable `ImplicitSolver` class, to be used by implicit ODE methods.
-* `newton` -- test driver to show use of `ImplicitSolver`.
-* `forward_euler` -- simple IVP "evolution" routine, based on the simplest IVP solver.  Basic approach for timestep adaptivity.  Contains two classes, `ForwardEuler` (fixed-step evolution) and `AdaptEuler` (adaptive-step evolution).
-* `simple_implicit` -- simple implicit ODE solver classes, `BackwardEuler` and `Trapezoidal`, showing use of the `ImplicitSolver` class for implicit ODE methods.
-* `explicit_one_step` -- higher-order explicit, one-step, ODE integration methods, containing the `Taylor2` and `ERK` classes.
-* `implicit_one_step` -- higher-order implicit, one-step, ODE integration methods, containing the `DIRK` and `IRK` classes.
+*Installation note:* if you need to install these, it is generally recommended to install Python dependencies in a virtual environment; in recent versions of Python, you can create an activate a virtual environment via
 
-Daniel R. Reynolds
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Following this, the Python dependencies can be installed via
+
+```bash
+pip install -r python_requirements.txt
+```
+
+## File layout
+
+Classes and user-callable functions are in files that begin with capital letters:
+
+* `AdaptERK.py` -- explicit Runge--Kutta adaptive IVP solver class.
+* `BackwardEuler.py` -- simple baseline implicit IVP time-stepper class.
+* `DIRK.py` -- diagonally-implicit Runge--Kutta IVP time-stepper class.
+* `ERK.py` -- explicit Runge--Kutta IVP time-stepper class.
+* `ForwardEuler.py` -- simple baseline explicit IVP time-stepper class.
+* `ImplicitSolver.py` -- reusable nonlinear solver class for implicit IVP methods.
+* `RK_stability.py` -- function to generate linear stability plots for Runge--Kutta methods.
+
+Scripts that run various various demos are in files that begin with lower-case letters:
+
+* `driver_adaptERK.py` --
+* `driver_DIRK_system.py` --
+* `driver_DIRK.py` --
+* `driver_ERK.py` --
+* `numpy_demo.py` --
+* `plotting_demo.py` --
+* `stability_experiment.py` --
+* `test_implicit_solver.py` --
+
+## Authors
+
+[Daniel R. Reynolds](https://drreynolds.github.io/)
 [Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)
 [Mathematics and Statistics @ UMBC](https://mathstat.umbc.edu)

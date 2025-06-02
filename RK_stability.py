@@ -11,12 +11,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def RK_stability(A, b, box, N=1000):
-    ''' Usage: X,Y = RK_stability(A, b, box, N)
+def RK_stability(B, box, N=1000):
+    ''' Usage: X,Y = RK_stability(B, box, N)
 
         Inputs:
-          A is a Butcher table matrix
-          b is a Butcher table gluing coefficients
+          B is a Butcher table, with components:
+             B['A'] -- the Butcher table matrix
+             B['b'] -- the solution coefficients
           box = [xl, xr, yl, yr] is the bounding box for the sub-region
               of the complex plane in which to perform the test
           N is optional, specifying how many sample sub-region points to use
@@ -35,6 +36,8 @@ def RK_stability(A, b, box, N=1000):
     import numpy as np
 
     # extract the components of the Butcher table
+    A = B['A']
+    b = B['b']
     s = len(b)
     e = np.ones(s)
     I = np.diag(e)
@@ -79,19 +82,21 @@ if __name__ == '__main__':
     A = np.zeros((1,1))
     b = np.zeros(1)
     b[0] = 1.0
+    B = {'A': A, 'b': b}
     box = [-3.0, 1.0, -2.0, 2.0]
-    (x,y) = RK_stability(A, b, box, 100)
+    (x,y) = RK_stability(B, box, 100)
     plt.title('Forward Euler stability region (shaded = stable)')
-    plt.savefig('FE_stability.pdf')
+    plt.savefig('FE_stability.png')
 
     A = np.zeros((1,1))
     A[0,0] = 1.0
     b = np.zeros(1)
     b[0] = 1.0
+    B = {'A': A, 'b': b}
     box = [-1.0, 3.0, -2.0, 2.0]
-    (x,y) = RK_stability(A, b, box, 100)
+    (x,y) = RK_stability(B, box, 100)
     plt.title('Backward Euler stability region (shaded = stable)')
-    plt.savefig('BE_stability.pdf')
+    plt.savefig('BE_stability.png')
 
     plt.show()
 
