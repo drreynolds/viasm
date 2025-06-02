@@ -32,7 +32,7 @@ class AdaptERK:
       growth  = maximum stepsize growth factor
       safety  = step size safety factor
     """
-    def __init__(self, f, y, B, rtol=1e-3, atol=1e-14, maxit=1e6, bias=1.0, growth=50.0, safety=0.9, hmin=10*np.finfo(float).eps):
+    def __init__(self, f, y, B, rtol=1e-3, atol=1e-14, maxit=1e6, bias=1.0, growth=50.0, safety=0.9, hmin=10*np.finfo(float).eps, save_step_hist=False):
         # required inputs
         self.f = f
         # optional inputs
@@ -56,6 +56,8 @@ class AdaptERK:
         self.q = B['q']
         self.fails = 0
         self.steps = 0
+        self.save_step_hist = save_step_hist
+        self.step_hist = {'t': [], 'h': [], 'err': []}
         self.nrhs = 0
         self.error_norm = 0.0
         self.h = 0.0
@@ -175,6 +177,12 @@ class AdaptERK:
                 eta = self.safety * self.error_norm**(-1.0/(self.p+1))  # step size growth factor
                 eta = min(eta, self.growth)                             # limit maximum growth
 
+                # store step size in history if requested
+                if (self.save_step_hist):
+                    self.step_hist['t'].append(t)
+                    self.step_hist['h'].append(self.h)
+                    self.step_hist['err'].append(self.error_norm)
+
                 # check error
                 if (self.error_norm < self.ONEPSM):  # successful step
 
@@ -257,10 +265,18 @@ class AdaptERK:
         """ Returns the current internal step size """
         return self.h
 
+    def get_step_history(self):
+        """ Returns the current step size history """
+        return self.step_hist
+
     def reset(self):
         """ Resets the solver statistics """
         self.fails = 0
         self.steps = 0
+        self.step_hist = {'t': [], 'h': [], 'err': []}
+
+
+# embedded ERK Butcher table routines
 
 def DormandPrince():
     """

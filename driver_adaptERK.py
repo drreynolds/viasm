@@ -55,12 +55,13 @@ rtol = 1.e-6
 atol = 1.e-12
 
 # create adaptive Dormand--Prince and ERK4 steppers
-ADP = AdaptERK(f, y0, DormandPrince(), rtol=rtol, atol=atol)
+ADP = AdaptERK(f, y0, DormandPrince(), rtol=rtol, atol=atol, save_step_hist=True)
 E4 = ERK(f, ERK4())
 
 ######## adaptive run ########
 print("\nAdaptive DP solver:")
 Y_adp, success = ADP.Evolve(tspan, y0)
+step_hist = ADP.get_step_history()
 print("  steps = %5i  fails = %2i\n" % (ADP.get_num_steps(), ADP.get_num_error_failures()))
 
 ######## fixed-step runs ########
@@ -78,33 +79,42 @@ print("  20000 steps:")
 Y_erk4_20000, success = E4.Evolve(tspan, y0, h=tf/20000)
 
 # create plot for adaptive run
-plt.figure(1)
+plt.figure()
 plt.plot(Y_adp[:,0],Y_adp[:,2])
 plt.xlabel('$u_1$')
 plt.ylabel('$u_2$')
 plt.title('Orbit (reference)')
 plt.savefig('adaptive_orbit.png')
+plt.figure()
+plt.plot(step_hist['t'],step_hist['h'], 'b-')
+for i in range(len(step_hist['t'])):
+    if (step_hist['err'][i] > 1.0):
+        plt.plot(step_hist['t'][i], step_hist['h'][i], 'rx')
+plt.xlabel('$t$')
+plt.ylabel('$h$')
+plt.title('Adaptive step history')
+plt.savefig('adaptive_steps.png')
 
 # create plots for fixed-step runs
-plt.figure(2)
+plt.figure()
 plt.plot(Y_erk4_100[:,0],Y_erk4_100[:,2])
 plt.xlabel('$u_1$')
 plt.ylabel('$u_2$')
 plt.title('Orbit (100 steps)')
 plt.savefig('orbit_100.png')
-plt.figure(3)
+plt.figure()
 plt.plot(Y_erk4_1000[:,0],Y_erk4_1000[:,2])
 plt.xlabel('$u_1$')
 plt.ylabel('$u_2$')
 plt.title('Orbit (1000 steps)')
 plt.savefig('orbit_1000.png')
-plt.figure(4)
+plt.figure()
 plt.plot(Y_erk4_10000[:,0],Y_erk4_10000[:,2])
 plt.xlabel('$u_1$')
 plt.ylabel('$u_2$')
 plt.title('Orbit (10000 steps)')
 plt.savefig('orbit_10000.png')
-plt.figure(5)
+plt.figure()
 plt.plot(Y_erk4_20000[:,0],Y_erk4_20000[:,2])
 plt.xlabel('$u_1$')
 plt.ylabel('$u_2$')
