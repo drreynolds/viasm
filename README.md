@@ -27,7 +27,8 @@ Classes and user-callable functions are in files that begin with capital letters
 * `BackwardEuler.py` -- simple baseline implicit IVP time-stepper class.
 * `DIRK.py` -- diagonally-implicit Runge--Kutta IVP time-stepper class.
 * `ERK.py` -- explicit Runge--Kutta IVP time-stepper class.
-* `ForwardEuler.py` -- simple baseline explicit IVP time-stepper class.
+* `ForwardEuler.py`
+-- simple baseline explicit IVP time-stepper class.
 * `ImplicitSolver.py` -- reusable nonlinear solver class for implicit IVP methods.
 * `RK_stability.py` -- function to generate linear stability plots for Runge--Kutta methods.
 
@@ -44,6 +45,6 @@ Scripts that run various various demos are in files that begin with lower-case l
 
 ## Authors
 
-[Daniel R. Reynolds](https://drreynolds.github.io/)
-[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)
+[Daniel R. Reynolds](https://drreynolds.github.io/)  
+[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)  
 [Mathematics and Statistics @ UMBC](https://mathstat.umbc.edu)
