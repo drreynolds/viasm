@@ -14,6 +14,6 @@ Codes are grouped according to type:
 * `explicit_one_step` -- higher-order explicit, one-step, ODE integration methods, containing the `Taylor2` and `ERK` classes.
 * `implicit_one_step` -- higher-order implicit, one-step, ODE integration methods, containing the `DIRK` and `IRK` classes.
 
-Daniel R. Reynolds
-[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)
+Daniel R. Reynolds  
+[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)  
 [Mathematics and Statistics @ UMBC](https://mathstat.umbc.edu)
