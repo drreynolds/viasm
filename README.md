@@ -53,6 +53,6 @@ Basic Python demos:
 
 ## Authors
 
-[Daniel R. Reynolds](https://drreynolds.github.io/)
-[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)
+[Daniel R. Reynolds](https://drreynolds.github.io/)  
+[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)  
 [Mathematics and Statistics @ UMBC](https://mathstat.umbc.edu)
