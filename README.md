@@ -21,30 +21,38 @@ pip install -r python_requirements.txt
 
 ## File layout
 
-Classes and user-callable functions are in files that begin with capital letters:
+Classes and user-callable functions are in files that begin with capital letters, while scripts that run various demos are in files that begin with lower-case letters.  These are grouped as follows:
 
-* `AdaptERK.py` -- explicit Runge--Kutta adaptive IVP solver class.
+### Background
+
+Basic Python demos:
+
+* `numpy_demo.py` -- simple script showing Numpy usage.
+* `plotting_demo.py` -- simple script showing how to generate plots.
+
+### Fixed-step Runge--Kutta methods and implicit solvers
+
+* `ForwardEuler.py` -- simple baseline explicit IVP time-stepper class.
+* `ERK.py` -- explicit Runge--Kutta IVP time-stepper class.
+* `driver_explicit_fixed.py` -- script to test explicit fixed-step methods.
+* `driver_explicit_stability.py` -- script to demonstrate stability limitations of explicit methods.
+* `ImplicitSolver.py` -- reusable nonlinear solver class for implicit IVP methods.
 * `BackwardEuler.py` -- simple baseline implicit IVP time-stepper class.
 * `DIRK.py` -- diagonally-implicit Runge--Kutta IVP time-stepper class.
-* `ERK.py` -- explicit Runge--Kutta IVP time-stepper class.
-* `ForwardEuler.py`
--- simple baseline explicit IVP time-stepper class.
-* `ImplicitSolver.py` -- reusable nonlinear solver class for implicit IVP methods.
-* `RK_stability.py` -- function to generate linear stability plots for Runge--Kutta methods.
+* `driver_implicit_fixed.py` -- script to test implicit fixed-step methods.
+* `driver_implicit_system_fixed.py` -- script to test implicit fixed-step methods on a system of ODEs.
 
-Scripts that run various various demos are in files that begin with lower-case letters:
+### Adaptive-step Runge--Kutta methods
 
-* `driver_adaptERK.py` --
-* `driver_DIRK_system.py` --
-* `driver_DIRK.py` --
-* `driver_ERK.py` --
-* `numpy_demo.py` --
-* `plotting_demo.py` --
-* `stability_experiment.py` --
-* `test_implicit_solver.py` --
+* `AdaptERK.py` -- explicit Runge--Kutta adaptive IVP solver class.
+* `driver_explicit_adaptive.py` -- script to test explicit adaptive-step methods.
+
+### Auxiliary utilities
+
+* `RK_stability.py` -- function to plot linear stability regions for Runge--Kutta methods.
 
 ## Authors
 
-[Daniel R. Reynolds](https://drreynolds.github.io/)  
-[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)  
+[Daniel R. Reynolds](https://drreynolds.github.io/)
+[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)
 [Mathematics and Statistics @ UMBC](https://mathstat.umbc.edu)

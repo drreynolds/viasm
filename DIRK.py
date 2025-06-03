@@ -16,8 +16,7 @@
 
 import numpy as np
 import sys
-sys.path.append('..')
-from shared.ImplicitSolver import *
+from ImplicitSolver import *
 
 class DIRK:
     """
@@ -34,13 +33,13 @@ class DIRK:
         h = (optional) input with stepsize to use for time stepping.
             Note that this MUST be set either here or in the Evolve call.
     """
-    def __init__(self, f, sol, A, b, c, h=0.0):
+    def __init__(self, f, sol, B, h=0.0):
         # required inputs
         self.f = f
         self.sol = sol
-        self.A = A
-        self.b = b
-        self.c = c
+        self.A = B['A']
+        self.b = B['b']
+        self.c = B['c']
 
         # optional inputs
         self.h = h
@@ -48,11 +47,11 @@ class DIRK:
         # internal data
         self.steps = 0
         self.nsol = 0
-        self.s = c.size
+        self.s = self.c.size
 
         # check for legal table
-        if ((np.size(c,0) != self.s) or (np.size(A,0) != self.s) or
-            (np.size(A,1) != self.s) or (np.linalg.norm(A - np.tril(A,0), np.inf) > 1e-14)):
+        if ((np.size(self.c,0) != self.s) or (np.size(self.A,0) != self.s) or
+            (np.size(self.A,1) != self.s) or (np.linalg.norm(self.A - np.tril(self.A,0), np.inf) > 1e-14)):
             raise ValueError("DIRK ERROR: incompatible Butcher table supplied")
 
     def dirk_step(self, t, y, args=()):
@@ -177,15 +176,15 @@ class DIRK:
 
 def Alexander3():
     """
-    Usage: A, b, c, p = Alexander3()
+    Usage: B = Alexander3()
 
     Utility routine to return the DIRK table corresponding to
     Alexander's 3-stage O(h^3) method.
 
-    Outputs: A holds the Runge--Kutta stage coefficients
-             b holds the Runge--Kutta solution weights
-             c holds the Runge--Kutta abcissae
-             p holds the Runge--Kutta method order
+    Outputs: B['A'] holds the Runge--Kutta stage coefficients
+             B['b'] holds the Runge--Kutta solution weights
+             B['c'] holds the Runge--Kutta abcissae
+             B['p'] holds the Runge--Kutta method order
     """
     alpha = 0.43586652150845906
     tau2 = 0.5*(1.0+alpha)
@@ -197,19 +196,20 @@ def Alexander3():
                   0.25*(6.0*alpha*alpha - 20*alpha + 5.0), alpha))
     c = np.array((alpha, tau2, 1.0))
     p = 3
-    return A, b, c, p
+    B = {'A': A, 'b': b, 'c': c, 'p': p}
+    return B
 
 def CrouzeixRaviart3():
     """
-    Usage: A, b, c, p = CrouzeixRaviart3()
+    Usage: B = CrouzeixRaviart3()
 
     Utility routine to return the DIRK table corresponding to
     Crouzeix & Raviart's 3-stage O(h^4) method.
 
-    Outputs: A holds the Runge--Kutta stage coefficients
-             b holds the Runge--Kutta solution weights
-             c holds the Runge--Kutta abcissae
-             p holds the Runge--Kutta method order
+    Outputs: B['A'] holds the Runge--Kutta stage coefficients
+             B['b'] holds the Runge--Kutta solution weights
+             B['c'] holds the Runge--Kutta abcissae
+             B['p'] holds the Runge--Kutta method order
     """
     gamma = 1.0/np.sqrt(3.0)*np.cos(np.pi/18.0) + 0.5
     delta = 1.0/(6.0*(2.0*gamma-1.0)*(2.0*gamma-1.0))
@@ -219,4 +219,5 @@ def CrouzeixRaviart3():
     b = np.array((delta, 1.0-2.0*delta, delta))
     c = np.array((gamma, 0.5, 1.0-gamma))
     p = 4
-    return A, b, c, p
+    B = {'A': A, 'b': b, 'c': c, 'p': p}
+    return B

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Main routine to test various DIRK methods on the
+# Script to test various fixed-step implicit methods on the
 # scalar-valued ODE problem
 #    y' = lambda*y + (1-lambda)*cos(t) - (1+lambda)*sin(t), t in [0,5],
 #    y(0) = 1.
@@ -10,8 +10,8 @@
 # Math & Stat @ UMBC
 
 import numpy as np
-import sys
 from ImplicitSolver import *
+from BackwardEuler import *
 from DIRK import *
 
 # problem time interval and parameters
@@ -69,12 +69,14 @@ def RunTest(stepper, name):
               (np.max(orders), np.average(orders)))
 
 
+# Backward Euler tests
+BE = BackwardEuler(f, solver)
+RunTest(BE, 'Backward Euler')
+
 # Alexander3 tests
-A, b, c, p = Alexander3()
-Alex3 = DIRK(f, solver, A, b, c)
+Alex3 = DIRK(f, solver, Alexander3())
 RunTest(Alex3, 'Alexander-3')
 
 # Crouzeix & Raviart tests
-A, b, c, p = CrouzeixRaviart3()
-CR3 = DIRK(f, solver, A, b, c)
+CR3 = DIRK(f, solver, CrouzeixRaviart3())
 RunTest(CR3, 'Crouzeix & Raviart-3')

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Main routine to test the DIRK method on a system of ODEs
+# Script to test the implicit methods on a system of ODEs
 #    y' = f(t,y), t in [0,1],
 #    y(0) = y0.
 #
@@ -11,6 +11,7 @@
 import numpy as np
 import sys
 from ImplicitSolver import *
+from BackwardEuler import *
 from DIRK import *
 
 # get problem size from command line, otherwise set to 5
@@ -87,12 +88,14 @@ def RunTest(stepper, name):
           (np.max(orders), np.average(orders)))
 
 
+# Backward Euler tests
+BE = BackwardEuler(f, solver)
+RunTest(BE, 'Backward Euler')
+
 # Alexander3 tests
-A_, b_, c_, p = Alexander3()
-Alex3 = DIRK(f, solver, A_, b_, c_)
+Alex3 = DIRK(f, solver, Alexander3())
 RunTest(Alex3, 'Alexander-3')
 
 # Crouzeix & Raviart tests
-A_, b_, c_, p = CrouzeixRaviart3()
-CR3 = DIRK(f, solver, A_, b_, c_)
+CR3 = DIRK(f, solver, CrouzeixRaviart3())
 RunTest(CR3, 'Crouzeix & Raviart-3')

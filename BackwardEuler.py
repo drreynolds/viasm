@@ -63,6 +63,10 @@ class BackwardEuler:
         """ Returns the accumulated number of steps """
         return self.steps
 
+    def get_num_solves(self):
+        """ Returns the accumulated number of implicit solves """
+        return self.steps
+
     def Evolve(self, tspan, y0, h=0.0, args=()):
         """
         Usage: Y, success = Evolve(tspan, y0, h, args)
