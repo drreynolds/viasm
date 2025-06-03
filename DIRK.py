@@ -1,6 +1,6 @@
 # DIRK.py
 #
-# Fixed-stepsize diagonally-implicit Runge--Kutta stepper class
+# Fixed-stepsive diagonally-implicit Runge--Kutta stepper class
 # implementation file.
 #
 # Also contains functions to return specific DIRK Butcher tables.
@@ -219,5 +219,28 @@ def CrouzeixRaviart3():
     b = np.array((delta, 1.0-2.0*delta, delta))
     c = np.array((gamma, 0.5, 1.0-gamma))
     p = 4
+    B = {'A': A, 'b': b, 'c': c, 'p': p}
+    return B
+
+def SDIRK5():
+    """
+    Usage: B = SDIRK5()
+
+    Utility routine to return the SDIRK table corresponding to
+    a 5-stage, 5th-order method.
+
+    Outputs: B['A'] holds the Runge--Kutta stage coefficients
+             B['b'] holds the Runge--Kutta solution weights
+             B['c'] holds the Runge--Kutta abcissae
+             B['p'] holds the Runge--Kutta method order
+    """
+    A = np.array(((4024571134387/14474071345096, 0, 0, 0, 0),
+        (9365021263232/12572342979331, 4024571134387/14474071345096, 0, 0, 0),
+        (2144716224527/9320917548702, -397905335951/4008788611757, 4024571134387/14474071345096, 0, 0),
+        (-291541413000/6267936762551, 226761949132/4473940808273, -1282248297070/9697416712681, 4024571134387/14474071345096, 0),
+        (-2481679516057/4626464057815, -197112422687/6604378783090, 3952887910906/9713059315593, 4906835613583/8134926921134, 4024571134387/14474071345096)))
+    b = np.array((-2522702558582/12162329469185, 1018267903655/12907234417901, 4542392826351/13702606430957, 5001116467727/12224457745473, 1509636094297/3891594770934))
+    c = np.array((4024571134387/14474071345096, 5555633399575/5431021154178,  5255299487392/12852514622453, 3/20, 10449500210709/14474071345096))
+    p = 5
     B = {'A': A, 'b': b, 'c': c, 'p': p}
     return B

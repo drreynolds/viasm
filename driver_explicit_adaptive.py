@@ -54,15 +54,21 @@ tspan = np.linspace(t0, tf, Nout)
 rtol = 1.e-6
 atol = 1.e-12
 
-# create adaptive Dormand--Prince and ERK4 steppers
-ADP = AdaptERK(f, y0, DormandPrince(), rtol=rtol, atol=atol, save_step_hist=True)
+# create adaptive Dormand--Prince, adaptive Bogacki-Shampine, and ERK4 steppers
+BS = AdaptERK(f, y0, BogackiShampine(), rtol=rtol, atol=atol, save_step_hist=True)
+DP = AdaptERK(f, y0, DormandPrince(), rtol=rtol, atol=atol, save_step_hist=True)
 E4 = ERK(f, ERK4())
 
-######## adaptive run ########
-print("\nAdaptive DP solver:")
-Y_adp, success = ADP.Evolve(tspan, y0)
-step_hist = ADP.get_step_history()
-print("  steps = %5i  fails = %2i\n" % (ADP.get_num_steps(), ADP.get_num_error_failures()))
+######## adaptive runs ########
+print("\nAdaptive Bogacki-Shampine solver:")
+Y_BS, success = BS.Evolve(tspan, y0)
+step_hist_BS = BS.get_step_history()
+print("  steps = %5i  fails = %2i\n" % (BS.get_num_steps(), BS.get_num_error_failures()))
+
+print("\nAdaptive Dormand-Prince solver:")
+Y_DP, success = DP.Evolve(tspan, y0)
+step_hist_DP = DP.get_step_history()
+print("  steps = %5i  fails = %2i\n" % (DP.get_num_steps(), DP.get_num_error_failures()))
 
 ######## fixed-step runs ########
 print("\nERK4 runs:")
@@ -78,21 +84,32 @@ Y_erk4_10000, success = E4.Evolve(tspan, y0, h=tf/10000)
 print("  20000 steps:")
 Y_erk4_20000, success = E4.Evolve(tspan, y0, h=tf/20000)
 
-# create plot for adaptive run
+# create plots for adaptive runs
 plt.figure()
-plt.plot(Y_adp[:,0],Y_adp[:,2])
+plt.plot(Y_BS[:,0],Y_BS[:,2])
 plt.xlabel('$u_1$')
 plt.ylabel('$u_2$')
 plt.title('Orbit (reference)')
-plt.savefig('adaptive_orbit.png')
+plt.savefig('adaptive_BS_orbit.png')
 plt.figure()
-plt.plot(step_hist['t'],step_hist['h'], 'b-')
-for i in range(len(step_hist['t'])):
-    if (step_hist['err'][i] > 1.0):
-        plt.plot(step_hist['t'][i], step_hist['h'][i], 'rx')
+plt.plot(Y_DP[:,0],Y_DP[:,2])
+plt.xlabel('$u_1$')
+plt.ylabel('$u_2$')
+plt.title('Orbit (reference)')
+plt.savefig('adaptive_DP_orbit.png')
+plt.figure()
+plt.plot(step_hist_BS['t'], step_hist_BS['h'], 'b-', label='Bogacki-Shampine')
+plt.plot(step_hist_DP['t'], step_hist_DP['h'], 'r-', label='Dormand-Prince')
+for i in range(len(step_hist_BS['t'])):
+    if (step_hist_BS['err'][i] > 1.0):
+        plt.plot(step_hist_BS['t'][i], step_hist_BS['h'][i], 'bx')
+for i in range(len(step_hist_DP['t'])):
+    if (step_hist_DP['err'][i] > 1.0):
+        plt.plot(step_hist_DP['t'][i], step_hist_DP['h'][i], 'rx')
 plt.xlabel('$t$')
 plt.ylabel('$h$')
 plt.title('Adaptive step history')
+plt.legend()
 plt.savefig('adaptive_steps.png')
 
 # create plots for fixed-step runs

@@ -278,6 +278,75 @@ class AdaptERK:
 
 # embedded ERK Butcher table routines
 
+def HeunEuler():
+    """
+    Usage: B = HeunEuler()
+
+    Utility routine to return the embedded ERK table corresponding
+    to the Heun-Euler method.
+
+    Outputs: B['A'] holds the stage coefficients
+             B['b'] holds the solution weights
+             B['c'] holds the abcissae
+             B['d'] holds the embedding weights
+             B['p'] holds the method order
+             B['q'] holds the embedding order
+    """
+    A = np.array([[0, 0], [1, 0]], dtype=float)
+    b = np.array([0.5, 0.5], dtype=float)
+    c = np.array([0, 1], dtype=float)
+    d = np.array([1, 0], dtype=float)
+    p = 2
+    q = 1
+    B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
+    return B
+
+def ERK32():
+    """
+    Usage: B = ERK32()
+
+    Utility routine to return the embedded ERK table corresponding
+    to a 3rd-order ERK method with 2nd-order embedding.
+
+    Outputs: B['A'] holds the stage coefficients
+             B['b'] holds the solution weights
+             B['c'] holds the abcissae
+             B['d'] holds the embedding weights
+             B['p'] holds the method order
+             B['q'] holds the embedding order
+    """
+    A = np.array([[0, 0, 0], [1/2, 0, 0], [-1, 2, 0]], dtype=float)
+    b = np.array([1/6, 2/3, 1/6], dtype=float)
+    c = np.array([0, 0.5, 1], dtype=float)
+    d = np.array([0, 1, 0], dtype=float)
+    p = 3
+    q = 2
+    B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
+    return B
+
+def BogackiShampine():
+    """
+    Usage: B = BogackiShampine()
+
+    Utility routine to return the embedded ERK table corresponding
+    to the Bogacki-Shampine embedded ERK method.
+
+    Outputs: B['A'] holds the stage coefficients
+             B['b'] holds the solution weights
+             B['c'] holds the abcissae
+             B['d'] holds the embedding weights
+             B['p'] holds the method order
+             B['q'] holds the embedding order
+    """
+    A = np.array([[0, 0, 0, 0], [1/2, 0, 0, 0], [0, 3/4, 0, 0], [2/9, 1/3, 4/9, 0]], dtype=float)
+    b = np.array([2/9, 1/3, 4/9, 0], dtype=float)
+    c = np.array([0, 0.5, 3/4, 1], dtype=float)
+    d = np.array([7/24, 1/4, 1/3, 1/8], dtype=float)
+    p = 3
+    q = 2
+    B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
+    return B
+
 def DormandPrince():
     """
     Usage: B = DormandPrince()
@@ -304,7 +373,39 @@ def DormandPrince():
                  dtype=float)
     c = np.array([0, 1/5, 3/10, 4/5, 8/9, 1, 1], dtype=float)
     d = np.array([5179/57600, 0, 7571/16695, 393/640, -92097/339200, 187/2100, 1/40], dtype=float)
-    p = 4
-    q = 3
+    p = 5
+    q = 4
+    B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
+    return B
+
+def Verner65():
+    """
+    Usage: B = Verner65()
+
+    Utility routine to return the embedded ERK table corresponding
+    to the a 6th-order ERK method with 5th-order embedding by Verner.
+
+    Outputs: B['A'] holds the stage coefficients
+             B['b'] holds the solution weights
+             B['c'] holds the abcissae
+             B['d'] holds the embedding weights
+             B['p'] holds the method order
+             B['q'] holds the embedding order
+    """
+    A = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
+                  [1/6, 0, 0, 0, 0, 0, 0, 0],
+                  [4/75, 16/75, 0, 0, 0, 0, 0, 0],
+                  [5/6, -8/3, 5/2, 0, 0, 0, 0, 0],
+                  [-165/64, 55/6, -425/64, 85/96, 0, 0, 0, 0],
+                  [12/5, -8, 4015/612, -11/36, 88/255, 0, 0, 0],
+                  [-8263/15000, 124/75, -643/680, -81/250, 2484/10625, 0, 0, 0],
+                  [3501/1720, -300/43, 297275/52632, -319/2322, 24068/84065, 0, 3850/26703, 0]],
+                 dtype=float)
+    b = np.array([3/40, 0, 875/2244, 23/72, 264/1955, 0, 125/11592, 43/616],
+                 dtype=float)
+    c = np.array([0, 1/6, 4/15, 2/3, 5/6, 1, 1/15, 1], dtype=float)
+    d = np.array([13/160, 0, 2375/5984, 5/16, 12/85, 3/44, 0, 0], dtype=float)
+    p = 6
+    q = 5
     B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
     return B

@@ -152,6 +152,24 @@ class ERK:
         # return with "success" flag
         return Y, True
 
+def ERK1():
+    """
+    Usage: B = ERK1()
+
+    Utility routine to return the ERK table corresponding to forward Euler, posed as an ERK method.
+
+    Outputs: B['A'] holds the Runge--Kutta stage coefficients
+             B['b'] holds the Runge--Kutta solution weights
+             B['c'] holds the Runge--Kutta abcissae
+             B['p'] holds the Runge--Kutta method order
+    """
+    A = np.array(((0.0)))
+    b = np.array((1.0))
+    c = np.array((0.0))
+    p = 1
+    B = {'A': A, 'b':b, 'c':c, 'p': p}
+    return B
+
 def Heun():
     """
     Usage: B = Heun()

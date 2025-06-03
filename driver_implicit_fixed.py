@@ -80,3 +80,7 @@ RunTest(Alex3, 'Alexander-3')
 # Crouzeix & Raviart tests
 CR3 = DIRK(f, solver, CrouzeixRaviart3())
 RunTest(CR3, 'Crouzeix & Raviart-3')
+
+# SDIRK5 tests
+SD5 = DIRK(f, solver, SDIRK5())
+RunTest(SD5, 'SDIRK5')
