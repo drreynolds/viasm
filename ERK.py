@@ -116,8 +116,8 @@ class ERK:
         # verify that tspan values are separated by multiples of h
         for n in range(tspan.size-1):
             hn = tspan[n+1]-tspan[n]
-            if (abs(round(hn/self.h) - (hn/self.h)) > 100*np.sqrt(np.finfo(h).eps)*abs(self.h)):
-                raise ValueError("input values in tspan (%e,%e) are not separated by a multiple of h = %e" % (tspan[n],tspan[n+1],h))
+            if (abs(round(hn/self.h) - (hn/self.h)) > np.sqrt(np.finfo(self.h).eps)):
+                raise ValueError("input values in tspan (%e,%e) are not separated by a multiple of h = %e" % (tspan[n],tspan[n+1],self.h))
 
         # initialize output, and set first entry corresponding to initial condition
         y = y0.copy()
@@ -163,9 +163,9 @@ def ERK1():
              B['c'] holds the Runge--Kutta abcissae
              B['p'] holds the Runge--Kutta method order
     """
-    A = np.array(((0.0)))
-    b = np.array((1.0))
-    c = np.array((0.0))
+    A = np.array((((0.0,),)))
+    b = np.array((1.0,))
+    c = np.array((0.0,))
     p = 1
     B = {'A': A, 'b':b, 'c':c, 'p': p}
     return B

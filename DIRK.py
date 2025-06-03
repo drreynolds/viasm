@@ -134,7 +134,7 @@ class DIRK:
         # verify that tspan values are separated by multiples of h
         for n in range(tspan.size-1):
             hn = tspan[n+1]-tspan[n]
-            if (abs(round(hn/self.h) - (hn/self.h)) > 100*np.sqrt(np.finfo(h).eps)*abs(self.h)):
+            if (abs(round(hn/self.h) - (hn/self.h)) > np.sqrt(np.finfo(h).eps)):
                 raise ValueError("input values in tspan (%e,%e) are not separated by a multiple of h = %e" % (tspan[n],tspan[n+1],h))
 
         # initialize output, and set first entry corresponding to initial condition
