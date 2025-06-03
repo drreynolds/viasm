@@ -46,6 +46,8 @@ Basic Python demos:
 
 * `AdaptERK.py` -- explicit Runge--Kutta adaptive IVP solver class.
 * `driver_explicit_adaptive.py` -- script to test explicit adaptive-step methods.
+* `AdaptDIRK.py` -- implicit Runge--Kutta adaptive IVP solver class.
+* `driver_implicit_adaptive.py` -- script to test implicit adaptive-step methods.
 
 ### Auxiliary utilities
 
@@ -55,4 +57,7 @@ Basic Python demos:
 
 [Daniel R. Reynolds](https://drreynolds.github.io/)  
 [Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)  
-[Mathematics and Statistics @ UMBC](https://mathstat.umbc.edu)
+[Mathematics & Statistics @ UMBC](https://mathstat.umbc.edu)
+
+[Van Hoang Nguyen](https://www.depts.ttu.edu/math/facultystaff)  
+[Mathematics & Statistics @ TTU](https://www.depts.ttu.edu/math)
