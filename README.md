@@ -47,6 +47,8 @@ Basic Python demos:
 * `driver_explicit_adaptive.py` -- script to test explicit adaptive-step methods.
 * `AdaptDIRK.py` -- implicit Runge--Kutta adaptive IVP solver class.
 * `driver_implicit_adaptive.py` -- script to test implicit adaptive-step methods.
+* `driver_adaptive_timescale.py` -- script to demonstrate how adaptive solvers track dynamical time scales.
+* `driver_adaptive_implicit.py` -- script to demonstrate how adaptive solvers can assess stiffness.
 
 ### Auxiliary utilities
 
