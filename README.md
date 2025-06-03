@@ -40,7 +40,6 @@ Basic Python demos:
 * `BackwardEuler.py` -- simple baseline implicit IVP time-stepper class.
 * `DIRK.py` -- diagonally-implicit Runge--Kutta IVP time-stepper class.
 * `driver_implicit_fixed.py` -- script to test implicit fixed-step methods.
-* `driver_implicit_system_fixed.py` -- script to test implicit fixed-step methods on a system of ODEs.
 
 ### Adaptive-step Runge--Kutta methods
 
