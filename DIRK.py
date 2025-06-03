@@ -15,21 +15,18 @@
 # Math & Stat @ UMBC
 
 import numpy as np
-import sys
 from ImplicitSolver import *
 
 class DIRK:
     """
     Fixed stepsize diagonally-implicit Runge--Kutta class
 
-    The five required arguments when constructing a DIRK object are a
+    The three required arguments when constructing a DIRK object are a
     function for the IVP right-hand side, an implicit solver to use,
     and a Butcher table:
         f = ODE RHS function with calling syntax f(t,y).
         sol = algebraic solver object to use [ImplicitSolver]
-        A = Runge--Kutta stage coefficients (s*s matrix)
-        b = Runge--Kutta solution weights (s array)
-        c = Runge--Kutta abcissae (s array).
+        B = diagonally-implicit Runge--Kutta Butcher table.
         h = (optional) input with stepsize to use for time stepping.
             Note that this MUST be set either here or in the Evolve call.
     """

@@ -1,41 +1,40 @@
-# AdaptERK.py
+# AdaptDIRK.py
 #
-# Adaptive-stepsize explicit Runge--Kutta solver class implementation file.
+# Adaptive-stepsive diagonally-implicit Runge--Kutta solver class
+# implementation file.
 #
-# Also contains functions to return specific explicit embedded Butcher tables.
+# Also contains functions to return specific embedded DIRK Butcher tables.
 #
-# Class to perform adaptive time evolution of the IVP
+# Class to perform adaptive stepsize time evolution of the IVP
 #      y' = f(t,y),  t in [t0, Tf],  y(t0) = y0
-# using an embedded Runge--Kutta time stepping method.
+# using an embedded diagonally-implicit Runge--Kutta (DIRK) time stepping
+# method.
 #
 # Daniel R. Reynolds
 # Math @ SMU
 # Math & Stat @ UMBC
 
 import numpy as np
+from ImplicitSolver import *
 
-class AdaptERK:
+class AdaptDIRK:
     """
-    Adaptive explicit Runge--Kutta class
+    Adaptive diagonally-implicit Runge--Kutta class
 
-    The three required arguments when constructing an AdaptERK object
-    are a function for the IVP right-hand side, a template vector
-    with the same shape and type as the IVP solution vector, and a Butcher
-    table with an embedding:
-      f = ODE RHS function with calling syntax f(t,y).
-      y = numpy array with m entries.
-      B = explicit embedded Butcher table.
-    Other optional inputs focus on specific adaptivity options:
-      rtol    = relative solution tolerance (float, >= 1e-12)
-      atol    = absolute solution tolerance (float or numpy array with m entries, all >=0)
-      maxit   = maximum allowed number of internal steps
-      bias    = error bias factor
-      growth  = maximum stepsize growth factor
-      safety  = step size safety factor
+    The four required arguments when constructing a DIRK object are a
+    function for the IVP right-hand side, an implicit solver to use,
+    and a Butcher table:
+        f = ODE RHS function with calling syntax f(t,y).
+        y = numpy array with m entries.
+        sol = algebraic solver object to use [ImplicitSolver]
+        B = diagonally-implicit embedded Butcher table.
+        h = (optional) input with stepsize to use for time stepping.
+            Note that this MUST be set either here or in the Evolve call.
     """
-    def __init__(self, f, y, B, rtol=1e-3, atol=1e-14, maxit=1e6, bias=1.0, growth=50.0, safety=0.85, hmin=10*np.finfo(float).eps, save_step_hist=False):
+    def __init__(self, f, y, sol, B, rtol=1e-3, atol=1e-14, maxit=1e6, bias=1.0, growth=50.0, safety=0.85, hmin=10*np.finfo(float).eps, save_step_hist=False):
         # required inputs
         self.f = f
+        self.sol = sol
         self.A = B['A']
         self.b = B['b']
         self.c = B['c']
@@ -59,15 +58,22 @@ class AdaptERK:
         self.ONEPSM = 1.0 + np.sqrt(np.finfo(float).eps)
         self.fails = 0
         self.steps = 0
+        self.nsol = 0
         self.save_step_hist = save_step_hist
         self.step_hist = {'t': [], 'h': [], 'err': []}
-        self.nrhs = 0
         self.error_norm = 0.0
         self.h = 0.0
         self.z = np.zeros(y.size)
         self.yt = np.zeros(y.size)
+        self.data = np.zeros(y.size)
         self.s = len(self.b)
         self.k = np.zeros((self.s, y.size))
+
+        # check for legal table
+        if ((np.size(self.c,0) != self.s) or (np.size(self.A,0) != self.s) or
+            (np.size(self.A,1) != self.s) or (np.linalg.norm(self.b-self.d) < 1e-14) or
+            (np.linalg.norm(self.A - np.tril(self.A,0), np.inf) > 1e-14)):
+            raise ValueError("AdaptDIRK ERROR: incompatible Butcher table supplied")
 
     def error_weight(self, y, w):
         """
@@ -81,20 +87,33 @@ class AdaptERK:
         """
         Usage: t, y, success = step(t, y, args)
 
-        Utility routine to take a single time step,
+        Utility routine to take a single diagonally-implicit RK time step,
         where the inputs (t,y) are overwritten by the updated versions.
-        args holds optional parameters used when evaluating the RHS.
+        args is used for optional parameters of the RHS.
         If success==True then the step succeeded; otherwise it failed.
         """
+
         # loop over stages, computing RHS vectors
-        self.k[0,:] = self.f(t, y, *args)
-        self.nrhs += 1
-        for i in range(1,self.s):
-            self.z = np.copy(y)
+        for i in range(self.s):
+
+            # construct "data" for this stage solve
+            self.data = np.copy(y)
             for j in range(i):
-                self.z += self.h * self.A[i,j] * self.k[j,:]
-            self.k[i,:] = self.f(t + self.c[i] * self.h, self.z, *args)
-            self.nrhs += 1
+                self.data += self.h * self.A[i,j] * self.k[j,:]
+
+            # construct implicit residual and Jacobian solver for this stage
+            tstage = t + self.h*self.c[i]
+            F = lambda zcur: zcur - self.data - self.h * self.A[i,i] * self.f(tstage, zcur, *args)
+            self.sol.setup_linear_solver(tstage, -self.h * self.A[i,i], args)
+
+            # perform implicit solve, and return on solver failure
+            self.z, iters, success = self.sol.solve(F, y)
+            self.nsol += 1
+            if (not success):
+                return t, y, False
+
+            # store RHS at this stage
+            self.k[i,:] = self.f(tstage, self.z, *args)
 
         # update time step solution
         for i in range(self.s):
@@ -111,13 +130,14 @@ class AdaptERK:
         """
         Usage: Y, success = Evolve(tspan, y0, h, args)
 
-        The adaptive ERK time step evolution routine
+        The adaptive DIRK time step evolution routine
 
         Inputs:  tspan holds the current time interval, [t0, tf], including any
-                    intermediate times when the solution is desired, i.e.
+                     intermediate times when the solution is desired, i.e.
                      [t0, t1, ..., tf]
                  y holds the initial condition, y(t0)
-                 h optionally holds the requested initial step size
+                 h optionally holds the requested step size (if it is not
+                     provided then the stored value will be used)
                  args holds optional equation parameters used when evaluating
                      the RHS.
         Outputs: Y holds the computed solution at all tspan values,
@@ -166,15 +186,18 @@ class AdaptERK:
 
                 # enforce maxit -- if we've exceeded attempts, return with failure
                 if (self.steps + self.fails > self.maxit):
-                    print("AdaptERK: reached maximum iterations, returning with failure")
+                    print("AdaptDIRK: reached maximum iterations, returning with failure")
                     return Y, False
 
                 # bound internal time step to not exceed next output time
                 self.h = min(self.h, tspan[iout]-t)
 
-                # reset temporary solution to current solution, and take ERK step
+                # reset temporary solution to current solution, and take DIRK step
                 self.yt = y.copy()
                 t, self.yt, success = self.step(t, self.yt, args)
+                if (not success):
+                    print("AdaptDIRK::Evolve error in time step at t =", t)
+                    return Y, False
 
                 # estimate step size growth/reduction factor based on error estimate
                 eta = self.safety * self.error_norm**(-1.0/(self.q+1))  # step size growth factor
@@ -203,11 +226,11 @@ class AdaptERK:
                     if (self.h > self.hmin):                              # failure, but reduction possible
                         self.h = max(self.h * eta, self.hmin)
                     else:                                                 # failed with no reduction possible
-                        print("AdaptERK: error test failed at h=hmin, returning with failure")
+                        print("AdaptDIRK: error test failed at h=hmin, returning with failure")
                         return Y, False
 
-            # store updated solution in output array
-            Y[iout,:] = y
+            # store current results in output arrays
+            Y[iout,:] = y.copy()
 
         # return with successful solution
         return Y, True
@@ -257,12 +280,12 @@ class AdaptERK:
         return self.fails
 
     def get_num_steps(self):
-        """ Returns the total number of internal time steps """
+        """ Returns the accumulated number of steps """
         return self.steps
 
-    def get_num_rhs(self):
-        """ Returns the total number of rhs calls """
-        return self.nrhs
+    def get_num_solves(self):
+        """ Returns the accumulated number of implicit solves """
+        return self.nsol
 
     def get_current_step(self):
         """ Returns the current internal step size """
@@ -273,22 +296,22 @@ class AdaptERK:
         return self.step_hist
 
     def reset(self):
-        """ Resets the solver statistics """
+        """ Resets the accumulated number of steps """
         self.fails = 0
         self.error_norm = 0.0
-        self.nrhs = 0
+        self.nsol = 0
         self.steps = 0
         self.step_hist = {'t': [], 'h': [], 'err': []}
 
 
-# embedded ERK Butcher table routines
+# embedded DIRK Butcher table routines
 
-def HeunEuler():
+def SDIRK21():
     """
-    Usage: B = HeunEuler()
+    Usage: B = SDIRK21()
 
-    Utility routine to return the embedded ERK table corresponding
-    to the Heun-Euler method.
+    Utility routine to return the SDIRK table corresponding to
+    an embedded method with order 2 and embedding order 1.
 
     Outputs: B['A'] holds the stage coefficients
              B['b'] holds the solution weights
@@ -297,21 +320,22 @@ def HeunEuler():
              B['p'] holds the method order
              B['q'] holds the embedding order
     """
-    A = np.array([[0, 0], [1, 0]], dtype=float)
-    b = np.array([0.5, 0.5], dtype=float)
-    c = np.array([0, 1], dtype=float)
-    d = np.array([1, 0], dtype=float)
+    A = np.array(((1-1/np.sqrt(2), 0), (1/np.sqrt(2), 1-1/np.sqrt(2))),
+                 dtype=float)
+    b = np.array((1/np.sqrt(2), 1-1/np.sqrt(2)), dtype=float)
+    d = np.array((-1/np.sqrt(2), 1+1/np.sqrt(2)), dtype=float)
+    c = np.array((1-1/np.sqrt(2), 1), dtype=float)
     p = 2
     q = 1
-    B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
+    B = {'A': A, 'b': b, 'c': c, 'd': d, 'p': p, 'q': q}
     return B
 
-def ERK32():
+def ESDIRK32():
     """
-    Usage: B = ERK32()
+    Usage: B = ESDIRK32()
 
-    Utility routine to return the embedded ERK table corresponding
-    to a 3rd-order ERK method with 2nd-order embedding.
+    Utility routine to return the an ESDIRK table corresponding to
+    a 5-stage, 3rd-order method with 2nd-order embedding.
 
     Outputs: B['A'] holds the stage coefficients
              B['b'] holds the solution weights
@@ -320,21 +344,25 @@ def ERK32():
              B['p'] holds the method order
              B['q'] holds the embedding order
     """
-    A = np.array([[0, 0, 0], [1/2, 0, 0], [-1, 2, 0]], dtype=float)
-    b = np.array([1/6, 2/3, 1/6], dtype=float)
-    c = np.array([0, 0.5, 1], dtype=float)
-    d = np.array([0, 1, 0], dtype=float)
+    A = np.array(((0, 0, 0, 0, 0),
+                  (9/40, 9/40, 0, 0, 0),
+                  (9*(1+np.sqrt(2))/80, 9*(1+np.sqrt(2))/80, 9/40, 0, 0),
+                  ((22+15*np.sqrt(2))/80/(1+np.sqrt(2)), (22+15*np.sqrt(2))/80/(1+np.sqrt(2)), -7/40/(1+np.sqrt(2)), 9/40, 0),
+                  ((2398+1205*np.sqrt(2))/2835/(4+3*np.sqrt(2)), (2398+1205*np.sqrt(2))/2835/(4+3*np.sqrt(2)), -2374*(1+2*np.sqrt(2))/2835/(5+3*np.sqrt(2)), 5827/7560, 9/40)), dtype=float)
+    b = np.array(((2398+1205*np.sqrt(2))/2835/(4+3*np.sqrt(2)), (2398+1205*np.sqrt(2))/2835/(4+3*np.sqrt(2)), -2374*(1+2*np.sqrt(2))/2835/(5+3*np.sqrt(2)), 5827/7560, 9/40), dtype=float)
+    c = np.array((0, 9/20, 9*(2+np.sqrt(2))/40, 3/5, 1), dtype=float)
+    d = np.array((4555948517383/24713416420891, 4555948517383/24713416420891, -7107561914881/25547637784726, 30698249/44052120, 49563/233080), dtype=float)
     p = 3
     q = 2
-    B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
+    B = {'A': A, 'b': b, 'c': c, 'd': d, 'p': p, 'q': q}
     return B
 
-def BogackiShampine():
+def ESDIRK43():
     """
-    Usage: B = BogackiShampine()
+    Usage: B = ESDIRK43()
 
-    Utility routine to return the embedded ERK table corresponding
-    to the Bogacki-Shampine embedded ERK method.
+    Utility routine to return the an ESDIRK table corresponding to
+    a 7-stage, 4th-order method with 3rd-order embedding.
 
     Outputs: B['A'] holds the stage coefficients
              B['b'] holds the solution weights
@@ -343,21 +371,33 @@ def BogackiShampine():
              B['p'] holds the method order
              B['q'] holds the embedding order
     """
-    A = np.array([[0, 0, 0, 0], [1/2, 0, 0, 0], [0, 3/4, 0, 0], [2/9, 1/3, 4/9, 0]], dtype=float)
-    b = np.array([2/9, 1/3, 4/9, 0], dtype=float)
-    c = np.array([0, 0.5, 3/4, 1], dtype=float)
-    d = np.array([7/24, 1/4, 1/3, 1/8], dtype=float)
-    p = 3
-    q = 2
-    B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
+    b = np.array((0, -5649241495537/14093099002237, 5718691255176/6089204655961, 2199600963556/4241893152925, 8860614275765/11425531467341, -3696041814078/6641566663007, 1/8), dtype=float)
+    b[0] = 1-np.sum(b)
+    c = np.array((0, 1/4, 1200237871921/16391473681546, 1/2, 395/567, 89/126, 1), dtype=float)
+    d = np.array((0, -1517409284625/6267517876163, 8291371032348/12587291883523, 5328310281212/10646448185159, 5405006853541/7104492075037, -4254786582061/7445269677723, 19/140), dtype=float)
+    d[0] = 1-np.sum(d)
+    A = np.array(((0, 0, 0, 0, 0, 0, 0),
+                  (0, 1/8, 0, 0, 0, 0, 0),
+                  (0, -39188347878/1513744654945, 1/8, 0, 0, 0, 0),
+                  (0, 1748874742213/5168247530883, -1748874742213/5795261096931, 1/8, 0, 0, 0),
+                  (0, -6429340993097/17896796106705, 9711656375562/10370074603625, 1137589605079/3216875020685, 1/8, 0, 0),
+                  (0, 405169606099/1734380148729, -264468840649/6105657584947, 118647369377/6233854714037, 683008737625/4934655825458, 1/8, 0), b), dtype=float)
+    A[1,0] = c[1]-np.sum(A[1,:])
+    A[2,0] = c[2]-np.sum(A[2,:])
+    A[3,0] = c[3]-np.sum(A[3,:])
+    A[4,0] = c[4]-np.sum(A[4,:])
+    A[5,0] = c[5]-np.sum(A[5,:])
+    p = 4
+    q = 3
+    B = {'A': A, 'b': b, 'c': c, 'd': d, 'p': p, 'q': q}
     return B
 
-def DormandPrince():
+def ESDIRK54():
     """
-    Usage: B = DormandPrince()
+    Usage: B = ESDIRK54()
 
-    Utility routine to return the embedded ERK table corresponding
-    to the Dormand Prince method.
+    Utility routine to return the an ESDIRK table corresponding to
+    a 7-stage, 5th-order method with 4th-order embedding.
 
     Outputs: B['A'] holds the stage coefficients
              B['b'] holds the solution weights
@@ -366,51 +406,37 @@ def DormandPrince():
              B['p'] holds the method order
              B['q'] holds the embedding order
     """
-    A = np.array([[0, 0, 0, 0, 0, 0, 0],
-                  [1/5, 0, 0, 0, 0, 0, 0],
-                  [3/40, 9/40, 0, 0, 0, 0, 0],
-                  [44/45, -56/15, 32/9, 0, 0, 0, 0],
-                  [19372/6561, -25360/2187, 64448/6561, -212/729, 0, 0, 0],
-                  [9017/3168, -355/33, 46732/5247, 49/176, -5103/18656, 0, 0],
-                  [35/384, 0, 500/1113, 125/192, -2187/6784, 11/84, 0]],
-                 dtype=float)
-    b = np.array([35/384, 0, 500/1113, 125/192, -2187/6784, 11/84, 0],
-                 dtype=float)
-    c = np.array([0, 1/5, 3/10, 4/5, 8/9, 1, 1], dtype=float)
-    d = np.array([5179/57600, 0, 7571/16695, 393/640, -92097/339200, 187/2100, 1/40], dtype=float)
+    c = np.array((0,  46/125, 7121331996143/11335814405378,
+                  49/353, 3706679970760/5295570149437, 347/382, 1),
+                  dtype=float)
+    b = np.array((0, -188593204321/4778616380481,
+                  2809310203510/10304234040467, 1021729336898/2364210264653,
+                  870612361811/2470410392208, -1307970675534/8059683598661,
+                  23/125), dtype=float)
+    b[0] = 1-np.sum(b)
+    d = np.array((0, -582099335757/7214068459310, 615023338567/3362626566945,
+                  3192122436311/6174152374399, 6156034052041/14430468657929,
+                  -1011318518279/9693750372484, 1914490192573/13754262428401),
+                  dtype=float)
+    d[0] = 1-np.sum(d)
+    A = np.array(((0, 0, 0, 0, 0, 0, 0),
+                  (0, 23/125, 0, 0, 0, 0, 0),
+                  (0, 791020047304/3561426431547, 23/125, 0, 0, 0, 0),
+                  (0, -158159076358/11257294102345,
+                   -85517644447/5003708988389, 23/125, 0, 0, 0),
+                  (0, -1653327111580/4048416487981,
+                   1514767744496/9099671765375, 14283835447591/12247432691556,
+                   23/125, 0, 0),
+                  (0, -4540011970825/8418487046959,
+                   -1790937573418/7393406387169, 10819093665085/7266595846747,
+                   4109463131231/7386972500302, 23/125, 0),
+                  b), dtype=float)
+    A[1,0] = c[1]-np.sum(A[1,:])
+    A[2,0] = c[2]-np.sum(A[2,:])
+    A[3,0] = c[3]-np.sum(A[3,:])
+    A[4,0] = c[4]-np.sum(A[4,:])
+    A[5,0] = c[5]-np.sum(A[5,:])
     p = 5
     q = 4
-    B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
-    return B
-
-def Verner65():
-    """
-    Usage: B = Verner65()
-
-    Utility routine to return the embedded ERK table corresponding
-    to the a 6th-order ERK method with 5th-order embedding by Verner.
-
-    Outputs: B['A'] holds the stage coefficients
-             B['b'] holds the solution weights
-             B['c'] holds the abcissae
-             B['d'] holds the embedding weights
-             B['p'] holds the method order
-             B['q'] holds the embedding order
-    """
-    A = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
-                  [1/6, 0, 0, 0, 0, 0, 0, 0],
-                  [4/75, 16/75, 0, 0, 0, 0, 0, 0],
-                  [5/6, -8/3, 5/2, 0, 0, 0, 0, 0],
-                  [-165/64, 55/6, -425/64, 85/96, 0, 0, 0, 0],
-                  [12/5, -8, 4015/612, -11/36, 88/255, 0, 0, 0],
-                  [-8263/15000, 124/75, -643/680, -81/250, 2484/10625, 0, 0, 0],
-                  [3501/1720, -300/43, 297275/52632, -319/2322, 24068/84065, 0, 3850/26703, 0]],
-                 dtype=float)
-    b = np.array([3/40, 0, 875/2244, 23/72, 264/1955, 0, 125/11592, 43/616],
-                 dtype=float)
-    c = np.array([0, 1/6, 4/15, 2/3, 5/6, 1, 1/15, 1], dtype=float)
-    d = np.array([13/160, 0, 2375/5984, 5/16, 12/85, 3/44, 0, 0], dtype=float)
-    p = 6
-    q = 5
-    B = {'A': A, 'b':b, 'c':c, 'd':d, 'p': p, 'q': q}
+    B = {'A': A, 'b': b, 'c': c, 'd': d, 'p': p, 'q': q}
     return B

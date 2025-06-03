@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Main routine to solve the IVP system
+# Script to solve the IVP system
 #    u1'' = u1 + 2*u2' - muh*(u1+mu)/D1 - mu*(u1-muh)/D2,
 #    u2'' = u2 - 2*u1' - muh*u2/D1 - mu*u2/D2,
 # with initial conditions
@@ -110,7 +110,7 @@ plt.xlabel('$t$')
 plt.ylabel('$h$')
 plt.title('Adaptive step history')
 plt.legend()
-plt.savefig('adaptive_steps.png')
+plt.savefig('adaptive_ERK_steps.png')
 
 # create plots for fixed-step runs
 plt.figure()

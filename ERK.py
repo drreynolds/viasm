@@ -18,7 +18,7 @@ class ERK:
     """
     Fixed stepsize explicit Runge--Kutta class
 
-    The four required arguments when constructing an ERK object are a
+    The two required arguments when constructing an ERK object are a
     function for the IVP right-hand side, and a Butcher table:
         f = ODE RHS function with calling syntax f(t,y).
         B = Explicit Runge--Kutta Butcher table.
