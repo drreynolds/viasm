@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 #
-# Script that runs various adaptive implicit methods on the Oregonator problem,
-# including built-in adaptive solvers.
+# Script that runs various adaptive implicit methods on the Oregonator problem.
 #
 # Daniel R. Reynolds
-# Department of Mathematics
-# Southern Methodist University
+# Math @ SMU
+# Math & Stat @ UMBC
 
 import numpy as np
 import matplotlib.pyplot as plt
