@@ -11,6 +11,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from ERK import ERK4
+from DIRK import CrouzeixRaviart3
 
 def RK_stability(B, box, N=1000):
     ''' Usage: X,Y = RK_stability(B, box, N)
@@ -103,6 +104,11 @@ if __name__ == '__main__':
     (x,y) = RK_stability(B, box, 100)
     plt.title('Backward Euler stability region (shaded = stable)')
     plt.savefig('BE_stability.png')
+
+    box = [-10.0, 10.0, -10.0, 10.0]
+    (x,y) = RK_stability(CrouzeixRaviart3(), box, 100)
+    plt.title('CrouzeixRaviart3 stability region (shaded = stable)')
+    plt.savefig('CR3_stability.png')
 
     plt.show()
 
