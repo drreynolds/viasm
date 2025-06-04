@@ -263,6 +263,10 @@ class AdaptDIRK:
         """ Resets the minimum step size """
         self.hmin = hmin
 
+    def update_rhs(self, f):
+        """ Updates the RHS function (cannot change vector dimensions) """
+        self.f = f
+
     def get_error_weight(self):
         """ Returns the current error weight vector """
         return self.w

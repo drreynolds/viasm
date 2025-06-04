@@ -26,14 +26,14 @@ from AdaptERK import *
 
 # KPR problem parameters
 Tf = 5
-Nt = 50
+Nt = 500
 tvals = np.linspace(0, Tf, Nt+1)
 e = 0.5
 W = [1, 10, 100, 1000, 10000]  # time scale values to test
 G = -10
 
 # loop over time scale values, accumulating time step history plot
-plt.figure()
+plt.figure(1)
 for w in W:
     print("\nKPR problem with w = %i\n" % (w))
 
@@ -86,10 +86,22 @@ for w in W:
     print("  steps = %5i  fails = %2i, error = %.2e\n" %
       (E32.get_num_steps(), E32.get_num_error_failures(), err_E32))
 
-    # add step history to plot
+    # create plot of solution
+    if (w < 1000):
+        plt.figure()
+        plt.plot(tvals, Y_E32)
+        plt.xlabel('$t$')
+        plt.ylabel('$y$')
+        plt.title('KPR Solution (w = %i)' % (w))
+        fname = 'kpr_solution_w%i.png' % (w)
+        plt.savefig(fname)
+
+    # add step history to figure 1
+    plt.figure(1)
     ltext = 'w = %i (mean = %.0e)' % (w, np.mean(step_hist_E32['h']))
     plt.plot(step_hist_E32['t'], step_hist_E32['h'], label=ltext)
 
+plt.figure(1)
 plt.xlabel('$t$')
 plt.ylabel('$h$')
 plt.title('Adaptive step histories')

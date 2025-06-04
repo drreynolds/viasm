@@ -22,7 +22,7 @@ class ERK:
     function for the IVP right-hand side, and a Butcher table:
         f = ODE RHS function with calling syntax f(t,y).
         B = Explicit Runge--Kutta Butcher table.
-        h = (optional) input with stepsize to use for time stepping.
+        h = (optional) input with requested stepsize to use for time stepping.
             Note that this MUST be set either here or in the Evolve call.
     """
     def __init__(self, f, B, h=0.0):
@@ -45,11 +45,11 @@ class ERK:
             (np.size(self.A,1) != self.s) or (np.linalg.norm(self.A - np.tril(self.A,-1), np.inf) > 1e-14)):
             raise ValueError("ERK ERROR: incompatible Butcher table supplied")
 
-    def erk_step(self, t, y, args=()):
+    def erk_step(self, t, y, h, args=()):
         """
-        Usage: t, y, success = erk_step(t, y, args)
+        Usage: t, y, success = erk_step(t, y, h, args)
 
-        Utility routine to take a single explicit RK time step,
+        Utility routine to take a single explicit RK time step of size h,
         where the inputs (t,y) are overwritten by the updated versions.
         args is used for optional parameters of the RHS.
         If success==True then the step succeeded; otherwise it failed.
@@ -61,16 +61,20 @@ class ERK:
         for i in range(1,self.s):
             self.z = np.copy(y)
             for j in range(i):
-                self.z += self.h * self.A[i,j] * self.k[j,:]
-            self.k[i,:] = self.f(t + self.c[i] * self.h, self.z, *args)
+                self.z += h * self.A[i,j] * self.k[j,:]
+            self.k[i,:] = self.f(t + self.c[i] * h, self.z, *args)
             self.nrhs += 1
 
         # update time step solution and tcur
         for i in range(self.s):
-            y += self.h * self.b[i] * self.k[i,:]
-        t += self.h
+            y += h * self.b[i] * self.k[i,:]
+        t += h
         self.steps += 1
         return t, y, True
+
+    def update_rhs(self, f):
+        """ Updates the RHS function (cannot change vector dimensions) """
+        self.f = f
 
     def reset(self):
         """ Resets the accumulated number of steps """
@@ -113,12 +117,6 @@ class ERK:
         if (self.h == 0.0):
             raise ValueError("ERROR: ERK::Evolve called without specifying a nonzero step size")
 
-        # verify that tspan values are separated by multiples of h
-        for n in range(tspan.size-1):
-            hn = tspan[n+1]-tspan[n]
-            if (abs(round(hn/self.h) - (hn/self.h)) > np.sqrt(np.finfo(self.h).eps)):
-                raise ValueError("input values in tspan (%e,%e) are not separated by a multiple of h = %e" % (tspan[n],tspan[n+1],self.h))
-
         # initialize output, and set first entry corresponding to initial condition
         y = y0.copy()
         Y = np.zeros((tspan.size, y0.size))
@@ -131,8 +129,9 @@ class ERK:
         # loop over desired output times
         for iout in range(1,tspan.size):
 
-            # determine how many internal steps are required
-            N = int(round((tspan[iout]-tspan[iout-1])/self.h))
+            # determine how many internal steps are required, and the actual step size to use
+            N = int(np.ceil((tspan[iout]-tspan[iout-1])/self.h))
+            h = (tspan[iout]-tspan[iout-1]) / N
 
             # reset "current" t that will be evolved internally
             t = tspan[iout-1]
@@ -141,7 +140,7 @@ class ERK:
             for n in range(N):
 
                 # perform explicit Runge--Kutta update
-                t, y, success = self.erk_step(t, y, args)
+                t, y, success = self.erk_step(t, y, h, args)
                 if (not success):
                     print("erk error in time step at t =", t)
                     return Y, False

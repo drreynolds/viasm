@@ -48,7 +48,13 @@ Basic Python demos:
 * `AdaptDIRK.py` -- implicit Runge--Kutta adaptive IVP solver class.
 * `driver_implicit_adaptive.py` -- script to test implicit adaptive-step methods.
 * `driver_adaptive_timescale.py` -- script to demonstrate how adaptive solvers track dynamical time scales.
-* `driver_adaptive_implicit.py` -- script to demonstrate how adaptive solvers can assess stiffness.
+* `driver_adaptive_stability.py` -- script to demonstrate how adaptive solvers can assess stiffness.
+
+### Multirate methods
+
+* `LieTrotterSubcycling.py` -- simple fixed-step Lie--Trotter subcycling IVP time-stepper class.
+* `MRI.py` -- higher-order fixed-step multirate infinitesimal (MRI)ling IVP time-stepper class.
+* `driver_subcycling.py` -- script to demonstrate accuracy differences for various multirate methods.
 
 ### Auxiliary utilities
 

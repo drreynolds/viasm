@@ -65,8 +65,7 @@ def RunTest(stepper, name):
                       (stepper.get_num_solves(), stepper.sol.get_total_iters(),
                        stepper.sol.get_total_setups(), errs[idx]))
         orders = np.log(errs[0:-2]/errs[1:-1])/np.log(hvals[0:-2]/hvals[1:-1])
-        print('    estimated order:  max = %.2f,  avg = %.2f' %
-              (np.max(orders), np.average(orders)))
+        print('    estimated order:  %.2f' % (np.median(orders)))
 
 
 # Backward Euler tests

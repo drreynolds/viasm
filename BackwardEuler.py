@@ -22,7 +22,7 @@ class BackwardEuler:
     are a function for the IVP right-hand side, and an implicit solver to use:
         f = ODE RHS function with calling syntax f(t,y).
         sol = algebraic solver object to use [ImplicitSolver]
-        h = (optional) input with stepsize to use for time stepping.
+        h = (optional) input with requested stepsize to use for time stepping.
             Note that this MUST be set either here or in the Evolve call.
     """
     def __init__(self, f, sol, h=0.0):
@@ -33,27 +33,31 @@ class BackwardEuler:
         # internal data
         self.steps = 0
 
-    def backward_euler_step(self, t, y, args=()):
+    def backward_euler_step(self, t, y, h, args=()):
         """
-        Usage: t, y, success = backward_euler_step(t, y, args)
+        Usage: t, y, success = backward_euler_step(t, y, h, args)
 
-        Utility routine to take a single backward Euler time step,
+        Utility routine to take a single backward Euler time step of size h,
         where the inputs (t,y) are overwritten by the updated versions.
         args is used for optional parameters of the RHS.
         If success==True then the step succeeded; otherwise it failed.
         """
 
         # update t for this step
-        t += self.h
+        t += h
 
         # create implicit residual and Jacobian solver for this step
-        F = lambda ynew: ynew - y - self.h * self.f(t, ynew, *args)
-        self.sol.setup_linear_solver(t, -self.h, args)
+        F = lambda ynew: ynew - y - h * self.f(t, ynew, *args)
+        self.sol.setup_linear_solver(t, -h, args)
 
         # perform implicit solve, and return on solver failure
         y, iters, success = self.sol.solve(F, y)
         self.steps += 1
         return t, y, success
+
+    def update_rhs(self, f):
+        """ Updates the RHS function (cannot change vector dimensions) """
+        self.f = f
 
     def reset(self):
         """ Resets the accumulated number of steps """
@@ -96,12 +100,6 @@ class BackwardEuler:
         if (self.h == 0.0):
             raise ValueError("ERROR: BackwardEuler::Evolve called without specifying a nonzero step size")
 
-        # verify that tspan values are separated by multiples of h
-        for n in range(tspan.size-1):
-            hn = tspan[n+1]-tspan[n]
-            if (abs(round(hn/self.h) - (hn/self.h)) > np.sqrt(np.finfo(h).eps)):
-                raise ValueError("input values in tspan (%e,%e) are not separated by a multiple of h = %e" % (tspan[n],tspan[n+1],h))
-
         # initialize output, and set first entry corresponding to initial condition
         y = y0.copy()
         Y = np.zeros((tspan.size,y0.size))
@@ -110,8 +108,9 @@ class BackwardEuler:
         # loop over desired output times
         for iout in range(1,tspan.size):
 
-            # determine how many internal steps are required
-            N = int(round((tspan[iout]-tspan[iout-1])/self.h))
+            # determine how many internal steps are required, and the actual step size to use
+            N = int(np.ceil((tspan[iout]-tspan[iout-1])/self.h))
+            h = (tspan[iout]-tspan[iout-1]) / N
 
             # reset "current" (t,y) that will be evolved internally
             t = tspan[iout-1]
@@ -120,7 +119,7 @@ class BackwardEuler:
             for n in range(N):
 
                 # perform backward Euler step
-                t, y, success = self.backward_euler_step(t, y, args)
+                t, y, success = self.backward_euler_step(t, y, h, args)
                 if (not success):
                     print("BackwardEuler::Evolve error in time step at t =", t)
                     return Y, False

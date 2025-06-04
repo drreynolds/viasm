@@ -59,7 +59,7 @@ for idx, h in enumerate(hvals):
     print("  overall:  steps = %5i  nrhs = %5i  abserr = %9.2e  relerr = %9.2e\n" %
           (H.get_num_steps(), H.get_num_rhs(), errs[idx], np.linalg.norm(Yerr/Ytrue,np.inf)))
 orders = np.log(errs[0:-2]/errs[1:-1])/np.log(hvals[0:-2]/hvals[1:-1])
-print('estimated order: max = ', np.max(orders), ',  avg = ', np.average(orders))
+print('estimated order: ', np.median(orders))
 
 #### ERK2 ####
 print("\nERK2:")
@@ -80,7 +80,7 @@ for idx, h in enumerate(hvals):
     print("  overall:  steps = %5i  nrhs = %5i  abserr = %9.2e  relerr = %9.2e\n" %
           (E2.get_num_steps(), E2.get_num_rhs(), errs[idx], np.linalg.norm(Yerr/Ytrue,np.inf)))
 orders = np.log(errs[0:-2]/errs[1:-1])/np.log(hvals[0:-2]/hvals[1:-1])
-print('estimated order: max = ', np.max(orders), ',  avg = ', np.average(orders))
+print('estimated order: ', np.median(orders))
 
 #### ERK3 ####
 print("\nERK3:")
@@ -101,7 +101,7 @@ for idx, h in enumerate(hvals):
     print("  overall:  steps = %5i  nrhs = %5i  abserr = %9.2e  relerr = %9.2e\n" %
           (E3.get_num_steps(), E3.get_num_rhs(), errs[idx], np.linalg.norm(Yerr/Ytrue,np.inf)))
 orders = np.log(errs[0:-2]/errs[1:-1])/np.log(hvals[0:-2]/hvals[1:-1])
-print('estimated order: max = ', np.max(orders), ',  avg = ', np.average(orders))
+print('estimated order: ', np.median(orders))
 
 #### ERK4 ####
 print("\nERK4:")
@@ -122,4 +122,4 @@ for idx, h in enumerate(hvals):
     print("  overall:  steps = %5i  nrhs = %5i  abserr = %9.2e  relerr = %9.2e\n" %
           (E4.get_num_steps(), E4.get_num_rhs(), errs[idx], np.linalg.norm(Yerr/Ytrue,np.inf)))
 orders = np.log(errs[0:-2]/errs[1:-1])/np.log(hvals[0:-2]/hvals[1:-1])
-print('estimated order: max = ', np.max(orders), ',  avg = ', np.average(orders))
+print('estimated order: ', np.median(orders))
