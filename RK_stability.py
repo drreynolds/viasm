@@ -10,6 +10,7 @@
 # general imports
 import numpy as np
 import matplotlib.pyplot as plt
+from ERK import ERK4
 
 def RK_stability(B, box, N=1000):
     ''' Usage: X,Y = RK_stability(B, box, N)
@@ -87,6 +88,11 @@ if __name__ == '__main__':
     (x,y) = RK_stability(B, box, 100)
     plt.title('Forward Euler stability region (shaded = stable)')
     plt.savefig('FE_stability.png')
+
+    box = [-5.0, 1.0, -3.0, 3.0]
+    (x,y) = RK_stability(ERK4(), box, 100)
+    plt.title('ERK4 stability region (shaded = stable)')
+    plt.savefig('RK4_stability.png')
 
     A = np.zeros((1,1))
     A[0,0] = 1.0
