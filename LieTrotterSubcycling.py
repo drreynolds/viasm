@@ -26,10 +26,10 @@ class LieTrotterSubcycling:
         fs = ODE RHS function with calling syntax fs(t,y).
         B = Explicit Runge--Kutta Butcher table.
         FastSolver = object that implements the "Evolve" method for the fast IVP.
-        h = (optional) input with stepsize to use for time stepping.
+        h = (optional) input with requested stepsize to use for time stepping.
             Note that this MUST be set either here or in the Evolve call.
     """
-    def __init__(self, fs, B, FastSolver, h=0.0):
+    def __init__(self, fs, B, FastSolver, H=0.0):
         # required inputs
         self.fs = fs
         self.A = B['A']
@@ -40,7 +40,7 @@ class LieTrotterSubcycling:
         self.FastSolver = FastSolver
 
         # optional inputs
-        self.h = h
+        self.H = H
 
         # internal data
         self.steps = 0
@@ -50,13 +50,13 @@ class LieTrotterSubcycling:
         # check for legal table
         if ((np.size(self.b,0) != self.s) or (np.size(self.A,0) != self.s) or
             (np.size(self.A,1) != self.s) or (np.linalg.norm(self.A - np.tril(self.A,-1), np.inf) > 1e-14)):
-            raise ValueError("ERK ERROR: incompatible Butcher table supplied")
+            raise ValueError("LieTrotterSubcycling ERROR: incompatible Butcher table supplied")
 
-    def step(self, t, y, args=()):
+    def step(self, t, y, H, args=()):
         """
-        Usage: t, y, success = step(t, y, args)
+        Usage: t, y, success = step(t, y, H, args)
 
-        Utility routine to take a single Lie-Trotter subcycled time step,
+        Utility routine to take a single Lie-Trotter subcycled time step of size H,
         where the inputs (t,y) are overwritten by the updated versions.
         args is used for optional parameters of the RHS.
         If success==True then the step succeeded; otherwise it failed.
@@ -68,23 +68,27 @@ class LieTrotterSubcycling:
         for i in range(1,self.s):
             self.z = np.copy(y)
             for j in range(i):
-                self.z += self.h * self.A[i,j] * self.k[j,:]
-            self.k[i,:] = self.fs(t + self.c[i] * self.h, self.z, *args)
+                self.z += H * self.A[i,j] * self.k[j,:]
+            self.k[i,:] = self.fs(t + self.c[i] * H, self.z, *args)
             self.nrhs += 1
 
         # compute intermediate time step solution
         for i in range(self.s):
-            y += self.h * self.b[i] * self.k[i,:]
+            y += H * self.b[i] * self.k[i,:]
 
         # call fast solver to evolve the sub-IVP
-        tspan = np.array([t, t + self.h])
+        tspan = np.array([t, t + H])
         ytmp, success = self.FastSolver.Evolve(tspan, y, args=args)
 
         # update current solution, time, and step counter, and return
         y = ytmp[1,:]  # extract the solution at t + h
-        t += self.h
+        t += H
         self.steps += 1
         return t, y, success
+
+    def update_rhs(self, fs):
+        """ Updates the slow RHS function (cannot change vector dimensions) """
+        self.fs = fs
 
     def reset(self):
         """ Resets the accumulated number of steps """
@@ -100,7 +104,7 @@ class LieTrotterSubcycling:
         """ Returns the accumulated number of RHS evaluations """
         return self.nrhs
 
-    def Evolve(self, tspan, y0, h=0.0, args=()):
+    def Evolve(self, tspan, y0, H=0.0, args=()):
         """
         Usage: Y, success = Evolve(tspan, y0, h, args)
 
@@ -110,7 +114,7 @@ class LieTrotterSubcycling:
                      intermediate times when the solution is desired, i.e.
                      [t0, t1, ..., tf]
                  y holds the initial condition, y(t0)
-                 h optionally holds the requested step size (if it is not
+                 H optionally holds the requested MRI step size (if it is not
                      provided then the stored value will be used)
                  args holds optional equation parameters used when evaluating
                      the RHS.
@@ -122,18 +126,12 @@ class LieTrotterSubcycling:
         import numpy as np
 
         # set time step for evoluation based on input-vs-stored value
-        if (h != 0.0):
-            self.h = h
+        if (H != 0.0):
+            self.H = H
 
         # raise error if step size was never set
-        if (self.h == 0.0):
+        if (self.H == 0.0):
             raise ValueError("ERROR: LieTrotterSubcycling::Evolve called without specifying a nonzero step size")
-
-        # verify that tspan values are separated by multiples of h
-        for n in range(tspan.size-1):
-            hn = tspan[n+1]-tspan[n]
-            if (abs(round(hn/self.h) - (hn/self.h)) > 100*np.sqrt(np.finfo(h).eps)*abs(self.h)):
-                raise ValueError("input values in tspan (%e,%e) are not separated by a multiple of h = %e" % (tspan[n],tspan[n+1],h))
 
         # initialize output, and set first entry corresponding to initial condition
         y = y0.copy()
@@ -147,8 +145,9 @@ class LieTrotterSubcycling:
         # loop over desired output times
         for iout in range(1,tspan.size):
 
-            # determine how many internal steps are required
-            N = int(round((tspan[iout]-tspan[iout-1])/self.h))
+            # determine how many internal steps are required, and the actual step size to use
+            N = int(np.ceil((tspan[iout]-tspan[iout-1])/self.H))
+            H = (tspan[iout]-tspan[iout-1]) / N
 
             # reset "current" (t,y) that will be evolved internally
             t = tspan[iout-1]
@@ -157,7 +156,7 @@ class LieTrotterSubcycling:
             for n in range(N):
 
                 # perform forward Euler update
-                t, y, success = self.step(t, y, args)
+                t, y, success = self.step(t, y, H, args)
                 if (not success):
                     print("LieTrotterSubcycling error in time step at t =", t)
                     return Y, False
