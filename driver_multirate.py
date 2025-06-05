@@ -26,11 +26,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from ERK import *
-from LieTrotterSubcycling import *
+from LTSubcycling import *
+from SMSubcycling import *
 from MRI import *
 
 # methods to test
 runLT = True
+runSM = True
 runMRI = True
 
 # KPR problem parameters
@@ -42,7 +44,7 @@ w = 100
 G = -10
 
 # slow step sizes to try
-Hvals = np.array([0.05, 0.025, 0.01, 0.005])
+Hvals = np.array([0.1, 0.05, 0.025, 0.01, 0.005, 0.0025])
 errs = np.zeros(Hvals.size)
 
 # KPR component functions
@@ -97,7 +99,7 @@ if (runLT):
 
         # create fast and slow steppers
         E1 = ERK(ff, ERK1(), h)
-        LT1 = LieTrotterSubcycling(fs, ERK1(), E1, H)
+        LT1 = LTSubcycling(fs, ERK1(), E1, H)
 
         # set initial condition and call stepper
         y0 = Ytrue[0,:]
@@ -110,7 +112,7 @@ if (runLT):
         print("   steps (s,f) = (%i, %i)  nrhs (s,f) = (%i, %i)  err = %.1e" %
             (LT1.get_num_steps(), E1.get_num_steps(), LT1.get_num_rhs(), E1.get_num_rhs(), errs[idx]))
     orders = np.log(errs[0:-2]/errs[1:-1])/np.log(Hvals[0:-2]/Hvals[1:-1])
-    print('estimated order: ', np.median(orders))
+    print('estimated order: ', np.mean(orders))
 
 
     # Lie-Trotter-2
@@ -122,7 +124,7 @@ if (runLT):
 
         # create fast and slow steppers
         E2 = ERK(ff, ERK2(), h)
-        LT2 = LieTrotterSubcycling(fs, ERK2(), E2, H)
+        LT2 = LTSubcycling(fs, ERK2(), E2, H)
 
         # set initial condition and call stepper
         y0 = Ytrue[0,:]
@@ -135,11 +137,62 @@ if (runLT):
         print("   steps (s,f) = (%i, %i)  nrhs (s,f) = (%i, %i)  err = %.1e" %
             (LT2.get_num_steps(), E2.get_num_steps(), LT2.get_num_rhs(), E2.get_num_rhs(), errs[idx]))
     orders = np.log(errs[0:-2]/errs[1:-1])/np.log(Hvals[0:-2]/Hvals[1:-1])
-    print('estimated order: ', np.median(orders))
+    print('estimated order: ', np.mean(orders))
 
 
-    # Lie-Trotter-3
-    print("\nLie-Trotter-Subcycling-3:")
+if (runSM):
+    # Strang-Marchuk-1
+    print("\nStrang-Marchuk-Subcycling-1:")
+    for idx, H in enumerate(Hvals):
+
+        # set fast time step size
+        h = H/w
+
+        # create fast and slow steppers
+        E1 = ERK(ff, ERK1(), h)
+        SM1 = SMSubcycling(fs, ERK1(), E1, H)
+
+        # set initial condition and call stepper
+        y0 = Ytrue[0,:]
+        print("  H = %f, h = %f:" % (H, h))
+        Y, success = SM1.Evolve(tvals, y0)
+
+        # output solution, errors, and overall error
+        Yerr = np.abs(Y-Ytrue)
+        errs[idx] = np.linalg.norm(Yerr,np.inf)
+        print("   steps (s,f) = (%i, %i)  nrhs (s,f) = (%i, %i)  err = %.1e" %
+            (SM1.get_num_steps(), E1.get_num_steps(), SM1.get_num_rhs(), E1.get_num_rhs(), errs[idx]))
+    orders = np.log(errs[0:-2]/errs[1:-1])/np.log(Hvals[0:-2]/Hvals[1:-1])
+    print('estimated order: ', np.mean(orders))
+
+
+    # Strang-Marchuk-2
+    print("\nStrang-Marchuk-2:")
+    for idx, H in enumerate(Hvals):
+
+        # set fast time step size
+        h = H/w
+
+        # create fast and slow steppers
+        E2 = ERK(ff, ERK2(), h)
+        SM2 = SMSubcycling(fs, ERK2(), E2, H)
+
+        # set initial condition and call stepper
+        y0 = Ytrue[0,:]
+        print("  H = %f, h = %f:" % (H, h))
+        Y, success = SM2.Evolve(tvals, y0)
+
+        # output solution, errors, and overall error
+        Yerr = np.abs(Y-Ytrue)
+        errs[idx] = np.linalg.norm(Yerr,np.inf)
+        print("   steps (s,f) = (%i, %i)  nrhs (s,f) = (%i, %i)  err = %.1e" %
+            (SM2.get_num_steps(), E2.get_num_steps(), SM2.get_num_rhs(), E2.get_num_rhs(), errs[idx]))
+    orders = np.log(errs[0:-2]/errs[1:-1])/np.log(Hvals[0:-2]/Hvals[1:-1])
+    print('estimated order: ', np.mean(orders))
+
+
+    # Strang-Marchuk-3
+    print("\nStrang-Marchuk-3:")
     for idx, H in enumerate(Hvals):
 
         # set fast time step size
@@ -147,20 +200,20 @@ if (runLT):
 
         # create fast and slow steppers
         E3 = ERK(ff, ERK3(), h)
-        LT3 = LieTrotterSubcycling(fs, ERK3(), E3, H)
+        SM3 = SMSubcycling(fs, ERK3(), E3, H)
 
         # set initial condition and call stepper
         y0 = Ytrue[0,:]
         print("  H = %f, h = %f:" % (H, h))
-        Y, success = LT3.Evolve(tvals, y0)
+        Y, success = SM3.Evolve(tvals, y0)
 
         # output solution, errors, and overall error
         Yerr = np.abs(Y-Ytrue)
         errs[idx] = np.linalg.norm(Yerr,np.inf)
         print("   steps (s,f) = (%i, %i)  nrhs (s,f) = (%i, %i)  err = %.1e" %
-            (LT3.get_num_steps(), E3.get_num_steps(), LT3.get_num_rhs(), E3.get_num_rhs(), errs[idx]))
+            (SM3.get_num_steps(), E3.get_num_steps(), SM3.get_num_rhs(), E3.get_num_rhs(), errs[idx]))
     orders = np.log(errs[0:-2]/errs[1:-1])/np.log(Hvals[0:-2]/Hvals[1:-1])
-    print('estimated order: ', np.median(orders))
+    print('estimated order: ', np.mean(orders))
 
 
 if (runMRI):
@@ -188,7 +241,7 @@ if (runMRI):
         print("   steps (s,f) = (%i, %i)  nrhs (s,f) = (%i, %i)  err = %.1e" %
             (MRI2.get_num_steps(), E2.get_num_steps(), MRI2.get_num_rhs(), E2.get_num_rhs(), errs[idx]))
     orders = np.log(errs[0:-2]/errs[1:-1])/np.log(Hvals[0:-2]/Hvals[1:-1])
-    print('estimated order: ', np.median(orders))
+    print('estimated order: ', np.mean(orders))
 
 
     # MRI-GARK-ERK33a
@@ -215,7 +268,7 @@ if (runMRI):
         print("   steps (s,f) = (%i, %i)  nrhs (s,f) = (%i, %i)  err = %.1e" %
             (MRI3.get_num_steps(), E3.get_num_steps(), MRI3.get_num_rhs(), E3.get_num_rhs(), errs[idx]))
     orders = np.log(errs[0:-2]/errs[1:-1])/np.log(Hvals[0:-2]/Hvals[1:-1])
-    print('estimated order: ', np.median(orders))
+    print('estimated order: ', np.mean(orders))
 
 
     # MRI-GARK-ERK45a
@@ -242,4 +295,4 @@ if (runMRI):
         print("   steps (s,f) = (%i, %i)  nrhs (s,f) = (%i, %i)  err = %.1e" %
             (MRI4.get_num_steps(), E4.get_num_steps(), MRI4.get_num_rhs(), E4.get_num_rhs(), errs[idx]))
     orders = np.log(errs[0:-2]/errs[1:-1])/np.log(Hvals[0:-2]/Hvals[1:-1])
-    print('estimated order: ', np.median(orders))
+    print('estimated order: ', np.mean(orders))

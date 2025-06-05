@@ -1,4 +1,4 @@
-# LieTrotterSubcycling.py
+# LTSubcycling.py
 #
 # Fixed-stepsize Lie-Trotter based subcycling time stepper class implementation file.
 #
@@ -16,11 +16,11 @@
 
 import numpy as np
 
-class LieTrotterSubcycling:
+class LTSubcycling:
     """
     Fixed stepsize Lie-Trotter subcycling time stepper class
 
-    The three required arguments when constructing a LieTrotterSubcycling object
+    The three required arguments when constructing a LTSubcycling object
     are a function for the "slow" IVP right-hand side, an explicit Runge--Kutta
     Butcher table to use for the slow IVP, and a solver for the "fast" sub-IVP:
         fs = ODE RHS function with calling syntax fs(t,y).
@@ -50,7 +50,7 @@ class LieTrotterSubcycling:
         # check for legal table
         if ((np.size(self.b,0) != self.s) or (np.size(self.A,0) != self.s) or
             (np.size(self.A,1) != self.s) or (np.linalg.norm(self.A - np.tril(self.A,-1), np.inf) > 1e-14)):
-            raise ValueError("LieTrotterSubcycling ERROR: incompatible Butcher table supplied")
+            raise ValueError("LTSubcycling ERROR: incompatible Butcher table supplied")
 
     def step(self, t, y, H, args=()):
         """
@@ -131,7 +131,7 @@ class LieTrotterSubcycling:
 
         # raise error if step size was never set
         if (self.H == 0.0):
-            raise ValueError("ERROR: LieTrotterSubcycling::Evolve called without specifying a nonzero step size")
+            raise ValueError("ERROR: LTSubcycling::Evolve called without specifying a nonzero step size")
 
         # initialize output, and set first entry corresponding to initial condition
         y = y0.copy()
@@ -158,7 +158,7 @@ class LieTrotterSubcycling:
                 # perform forward Euler update
                 t, y, success = self.step(t, y, H, args)
                 if (not success):
-                    print("LieTrotterSubcycling error in time step at t =", t)
+                    print("LTSubcycling error in time step at t =", t)
                     return Y, False
 
             # store current results in output arrays
