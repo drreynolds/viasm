@@ -52,9 +52,10 @@ Basic Python demos:
 
 ### Multirate methods
 
-* `LieTrotterSubcycling.py` -- simple fixed-step Lie--Trotter subcycling IVP time-stepper class.
-* `MRI.py` -- higher-order fixed-step multirate infinitesimal (MRI)ling IVP time-stepper class.
-* `driver_subcycling.py` -- script to demonstrate accuracy differences for various multirate methods.
+* `LTSubcycling.py` -- simple fixed-step Lie--Trotter subcycling IVP time-stepper class.
+* `SMSubcycling.py` -- simple fixed-step Strang--Marchuk subcycling IVP time-stepper class.
+* `MRI.py` -- higher-order fixed-step multirate infinitesimal (MRI) IVP time-stepper class.
+* `driver_multirate.py` -- script to demonstrate accuracy differences for various multirate methods.
 
 ### Auxiliary utilities
 
