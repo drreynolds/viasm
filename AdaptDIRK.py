@@ -39,8 +39,7 @@ class AdaptDIRK:
         self.b = B['b']
         self.c = B['c']
         self.d = B['d']
-        self.p = B['p']
-        self.q = B['q']
+        self.minpq = min(B['p'], B['q'])
 
         # optional inputs
         self.rtol = rtol
@@ -200,7 +199,7 @@ class AdaptDIRK:
                     return Y, False
 
                 # estimate step size growth/reduction factor based on error estimate
-                eta = self.safety * self.error_norm**(-1.0/(self.q+1))  # step size growth factor
+                eta = self.safety * self.error_norm**(-1.0/(self.minpq+1))  # step size growth factor
                 eta = min(eta, self.growth)                             # limit maximum growth
 
                 # store step size in history if requested
