@@ -2,8 +2,8 @@
 #
 # Script that runs various Lie-Trotter subcycling methods and MRI methods
 # on the nonlinear Kvaerno Prothero and Robinson problem:
-#    [u]' = [ G  e ] [(-1+u^2-r)/(2u)] + [      r'(t)/(2u)        ]
-#    [v]    [ e -1 ] [(-2+v^2-s)/(2v)]   [ s'(t)/(2*sqrt(2+s(t))) ]
+#    [u]' = [ G  e ] [(-1+u^2-r)/(2u)] + [ r'(t)/(2u) ]
+#    [v]    [ e -1 ] [(-2+v^2-s)/(2v)]   [ s'(t)/(2v) ]
 #         = [fs(t,y)]
 #           [ff(t,y)]
 # where r(t) = 0.5*cos(t),  s(t) = cos(w*t),  0 < t < 5.
@@ -87,7 +87,7 @@ def ff(t, y):
     return (np.array([[0, 0], [e, -1]])
             @ np.array([(-1 + u**2 - r(t)) / (2 * u),
                         (-2 + v**2 - s(t)) / (2 * v)])
-            + np.array([0, sdot(t) / (2 * np.sqrt(2 + s(t)))]))
+            + np.array([0, sdot(t) / (2 * v)]))
 
 if (runLT):
     # Lie-Trotter-1
