@@ -37,14 +37,6 @@ These codes require a modern Python installation, a few standard Python modules,
 Open **Anaconda Navigator** from your Start Menu (Windows) or Applications folder
 (MacOS).
 
-### Install & Launch Spyder
-
-* In Anaconda Navigator, locate **Spyder**.
-
-* If not already installed, click **Install.**
-
-* After installation, click **Launch** to open Spyder.
-
 ### Download Code from GitHub
 
 #### Option 1: Using Git (Recommended)
@@ -82,18 +74,40 @@ Open **Anaconda Navigator** from your Start Menu (Windows) or Applications folde
 To install the Python packages that are used by the codes in this repository, use **Anaconda Prompt/Terminal** from the folder containing the downloaded/cloned code:
 
 ```bash
-   conda install -r python_requirements.txt
+pip install -r python_requirements.txt
 ```
 
-### Open and run the code in Spyder
+### Running the codes
 
-1. In Spyder, go to **File > Open**.
+#### Option 1: run directly in Anaconda Prompt/Terminal
 
-2. Navigate to the folder containing the downloaded/cloned code.
+Run the desired Python script directly at the command-line:
 
-3. Select the `.py` file you want to run and open it.
+```bash
+python scriptname.py
+```
 
-4. Press the green **Run** button (Play icon) in Spyder to execute your script.
+where `scriptname.py` is the name of the script you wish to run.
+
+#### Option 2: run in Spyder
+
+1. Launch Spyder:
+
+   * In Anaconda Navigator, locate **Spyder**.
+
+   * If not already installed, click **Install.**
+
+   * After installation, click **Launch** to open Spyder.
+
+2. Open and run the code in Spyder
+
+   1. In Spyder, go to **File > Open**.
+
+   2. Navigate to the folder containing the downloaded/cloned code.
+
+   3. Select the `.py` file you want to run and open it.
+
+   4. Press the green **Run** button (Play icon) in Spyder to execute your script.
 
 ## File layout
 
