@@ -73,7 +73,7 @@ Open **Anaconda Navigator** from your Start Menu (Windows) or Applications folde
 
 1. Go to the GitHub repository page in your web browser.
 
-2. Click the green Code button, then select Download ZIP.
+2. Click the green **Code button**, then select **Download ZIP**.
 
 3. Extract the ZIP file to your preferred location.
 
@@ -97,40 +97,56 @@ To install the Python packages that are used by the codes in this repository, us
 
 ## File layout
 
-Classes and user-callable functions are in files that begin with capital letters, while scripts that run various demos are in files that begin with lower-case letters.  These are grouped as follows:
+Files that begin with capital letters contain Python classes and user-callable functions.  Files that begin with lower-case letters contain scripts that run various demos.  These are grouped as follows:
 
 ### Background
 
 Basic Python demos:
 
 * `numpy_demo.py` -- simple script showing Numpy usage.
+
 * `plotting_demo.py` -- simple script showing how to generate plots.
 
 ### Fixed-step Runge--Kutta methods and implicit solvers
 
 * `ForwardEuler.py` -- simple baseline explicit IVP time-stepper class.
+
 * `ERK.py` -- explicit Runge--Kutta IVP time-stepper class.
+
 * `driver_explicit_fixed.py` -- script to test explicit fixed-step methods.
+
 * `driver_explicit_stability.py` -- script to demonstrate stability limitations of explicit methods.
+
 * `ImplicitSolver.py` -- reusable nonlinear solver class for implicit IVP methods.
+
 * `BackwardEuler.py` -- simple baseline implicit IVP time-stepper class.
+
 * `DIRK.py` -- diagonally-implicit Runge--Kutta IVP time-stepper class.
+
 * `driver_implicit_fixed.py` -- script to test implicit fixed-step methods.
 
 ### Adaptive-step Runge--Kutta methods
 
 * `AdaptERK.py` -- explicit Runge--Kutta adaptive IVP solver class.
+
 * `driver_explicit_adaptive.py` -- script to test explicit adaptive-step methods.
+
 * `AdaptDIRK.py` -- implicit Runge--Kutta adaptive IVP solver class.
+
 * `driver_implicit_adaptive.py` -- script to test implicit adaptive-step methods.
+
 * `driver_adaptive_timescale.py` -- script to demonstrate how adaptive solvers track dynamical time scales.
+
 * `driver_adaptive_stability.py` -- script to demonstrate how adaptive solvers can assess stiffness.
 
 ### Multirate methods
 
 * `LTSubcycling.py` -- simple fixed-step Lie--Trotter subcycling IVP time-stepper class.
+
 * `SMSubcycling.py` -- simple fixed-step Strang--Marchuk subcycling IVP time-stepper class.
+
 * `MRI.py` -- higher-order fixed-step multirate infinitesimal (MRI) IVP time-stepper class.
+
 * `driver_multirate.py` -- script to demonstrate accuracy differences for various multirate methods.
 
 ### Auxiliary utilities
@@ -139,9 +155,9 @@ Basic Python demos:
 
 ## Authors
 
-[Daniel R. Reynolds](https://drreynolds.github.io/)
-[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)
+[Daniel R. Reynolds](https://drreynolds.github.io/)  
+[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)  
 [Mathematics & Statistics @ UMBC](https://mathstat.umbc.edu)
 
-[Van Hoang Nguyen](https://www.depts.ttu.edu/math/facultystaff)
+[Van Hoang Nguyen](https://www.depts.ttu.edu/math/facultystaff)  
 [Mathematics & Statistics @ TTU](https://www.depts.ttu.edu/math)
