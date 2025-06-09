@@ -323,11 +323,12 @@ def SDIRK21():
              B['p'] holds the method order
              B['q'] holds the embedding order
     """
-    A = np.array(((1-1/np.sqrt(2), 0), (1/np.sqrt(2), 1-1/np.sqrt(2))),
+    gamma = 1 - 1/np.sqrt(2);
+    A = np.array(((gamma, 0), (1-2*gamma, gamma)),
                  dtype=float)
-    b = np.array((1/np.sqrt(2), 1-1/np.sqrt(2)), dtype=float)
-    d = np.array((-1/np.sqrt(2), 1+1/np.sqrt(2)), dtype=float)
-    c = np.array((1-1/np.sqrt(2), 1), dtype=float)
+    b = np.array((0.5, 0.5), dtype=float)
+    d = np.array((5/12, 7/12), dtype=float)
+    c = np.array((gamma, 1-gamma), dtype=float)
     p = 2
     q = 1
     B = {'A': A, 'b': b, 'c': c, 'd': d, 'p': p, 'q': q}
