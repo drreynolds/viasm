@@ -2,6 +2,8 @@
 
 Hands-on codes for [VIASM 2025 summer school on advanced numerical methods for deterministic and stochastic differential equations](https://viasm.edu.vn/en/hdkh/summer-school-on-anm2025).
 
+The lectures that introduce and motivate these codes are available on Google Drive: https://tinyurl.com/viasm-anm2025.
+
 ## Setup
 
 These codes require a modern Python installation, a few standard Python modules, and the `git` command for interacting with GitHub.  The following step-by-step instructions guide you in installing Anaconda, downloading code from GitHub, and running the code in Spyder.  These steps are suitable for both Windows and MacOS users.
