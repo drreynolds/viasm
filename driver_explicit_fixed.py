@@ -40,6 +40,27 @@ for i in range(Nout):
 hvals = np.array([0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005])
 errs = np.zeros(hvals.size)
 
+#### ERK1 ####
+print("\nERK1:")
+FE = ERK(f, ERK1())
+for idx, h in enumerate(hvals):
+
+    # set initial condition and call stepper
+    y0 = Ytrue[0,:]
+    print("  h = ", h, ":")
+    FE.reset()
+    Y, success = FE.Evolve(tspan, y0, h)
+
+    # output solution, errors, and overall error
+    Yerr = np.abs(Y-Ytrue)
+    errs[idx] = np.linalg.norm(Yerr,np.inf)
+    for i in range(Nout):
+        print("    y(%.1f) = %9.6f   |error| = %.2e" % (tspan[i], Y[i,0], Yerr[i,0]))
+    print("  overall:  steps = %5i  nrhs = %5i  abserr = %9.2e  relerr = %9.2e\n" %
+          (FE.get_num_steps(), FE.get_num_rhs(), errs[idx], np.linalg.norm(Yerr/Ytrue,np.inf)))
+orders = np.log(errs[0:-2]/errs[1:-1])/np.log(hvals[0:-2]/hvals[1:-1])
+print('estimated order: ', np.median(orders))
+
 #### Heun ####
 print("\nHeun:")
 H = ERK(f, Heun())
