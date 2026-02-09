@@ -172,7 +172,6 @@ Basic Python demos:
 ## Authors
 
 [Daniel R. Reynolds](https://drreynolds.github.io/)  
-[Mathematics @ SMU](https://www.smu.edu/dedman/academics/departments/math)  
 [Mathematics & Statistics @ UMBC](https://mathstat.umbc.edu)
 
 [Van Hoang Nguyen](https://www.depts.ttu.edu/math/facultystaff)  
